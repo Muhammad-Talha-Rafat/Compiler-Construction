@@ -2,6 +2,6 @@
 using namespace std;
 
 int main() {
-	cout << "Real Madrid";
+	cout << "Real Madrid 15";
 	return 0;
 }
