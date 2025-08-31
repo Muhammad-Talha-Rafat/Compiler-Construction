@@ -129,6 +129,7 @@
     <Text Include="code.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="noRegex.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
