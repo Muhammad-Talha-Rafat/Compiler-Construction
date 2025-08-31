@@ -1,2 +1,9 @@
 ﻿  main.cpp
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(32,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(36,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(40,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(44,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(48,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(52,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+E:\Kachra\Repositories\Compiler\Compiler\main.cpp(56,26): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
   Compiler.vcxproj -> E:\Kachra\Repositories\Compiler\x64\Debug\Compiler.exe
