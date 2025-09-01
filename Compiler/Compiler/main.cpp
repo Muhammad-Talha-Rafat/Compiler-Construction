@@ -1,6 +1,6 @@
 ﻿#include <iostream>
 #include "Regex.h"
-#include "noRegex.h"
+//#include "noRegex.h"
 using namespace std;
 
 int main() {
