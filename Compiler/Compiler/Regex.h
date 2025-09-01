@@ -122,7 +122,6 @@ vector<rule> Rules = {
     {"XOR", regex("^\\^")},
     {"NOT", regex("^~")},
 
-
     {"QUESTION", regex("^\\?")},
     {"SCOPE", regex("^::")},
     {"COLON", regex("^:")},
