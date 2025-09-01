@@ -9,7 +9,7 @@ static int add(int a, int b) {
 
 int main() {
     int a = 7.0, b = 81;
-    char c = '$';
+    char character = '$';
     string d = "Real Madrid ";
     cout << d << c << add(a, b) << 'B';
     return 0;
