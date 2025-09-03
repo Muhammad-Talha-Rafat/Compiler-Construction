@@ -2,6 +2,8 @@
 #include "Regex/regex.h"
 using namespace std;
 
+#define itu = "trash"; // true
+
 static int add(int a, int b) {
     int c = a + b;
     return c;
@@ -10,7 +12,7 @@ static int add(int a, int b) {
 int main() {
     int a = 7.0, b = 81;
     char character = '$';
-    string d = "Real Madrid ";
-    cout << d << c << add(a, b) << 'B';
+    string str = "Real Madrid ";
+    cout << str << c << add(a, b) << 'B';
     return 0;
 }
