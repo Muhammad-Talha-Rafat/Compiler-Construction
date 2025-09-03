@@ -63,6 +63,7 @@ vector<rule> Rules = {
 
     {"LEFT_SHIFT", regex("^<<")},
     {"RIGHT_SHIFT", regex("^>>")},
+    {"MEMBEROF", regex("^->")},
 
     {"ADD_ASSIGN", regex("^\\+=")},
     {"SUB_ASSIGN", regex("^\\-=")},
@@ -96,7 +97,6 @@ vector<rule> Rules = {
     {"SEMICOLON", regex("^;")},
     {"COMMA", regex("^,")},
     {"DOT", regex("^\\.")},
-    {"MEMBEROF", regex("^->")},
 
     {"lBRACE", regex("^\\(")},
     {"rBRACE", regex("^\\)")},
@@ -138,9 +138,7 @@ static vector<token> tokenize(const string& code) {
 
 static void runWithRegex(const string& filename) {
     ifstream file(filename);
-
     string code((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-
     file.close();
 
     if (!code.empty() && code[0] == '\xEF') code.erase(0, 3);
