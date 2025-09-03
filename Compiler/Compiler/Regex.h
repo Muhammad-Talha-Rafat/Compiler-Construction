@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <set>
 using namespace std;
 
 struct rule {
@@ -11,75 +12,42 @@ struct rule {
     bool reserved = 1;
 };
 
+set<string> USERDEFINED = { "LIBRARY", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL" };
+
 struct token {
     string type;
     string value;
 
     void print() {
-        if (type == "SEMICOLON" || type == "rPARANTHESIS" || type == "lPARANTHESIS") cout << '<' << type << '>' << endl;
-        else if (type == "LIBRARY") cout << '<' << type << ": " << this->value << '>' << endl;
-        else if (value.empty()) cout << '<' << type << '>';
-        else cout << '<' << this->type << ": " << this->value << '>';
+        if (USERDEFINED.find(this->type) != USERDEFINED.end())
+            cout << '<' << this->type << ": " << this->value << '>';
+        else if (type == "KEYWORD") cout << '<' << this->value << '>';
+        else cout << '<' << this->type << '>';
+        if (value == "{" || value == "}" || value == ";" || type == "LIBRARY") cout << endl;
     }
 };
+
+set<string> KEYWORDS = { "#include", "#define", "using", "namespace",
+                        "int", "float", "double", "char", "string", "bool", "void",
+                        "main", "return", "endl", "cout", "cin",
+                        "do", "while", "for", "break", "continue", "true", "false",
+                        "if", "else if", "else", "switch", "case", "default", "try", "catch", "throw",
+                        "static", "const", "new", "delete", "sizeof", "this",
+                        "class", "struct", "template", "enum", "public", "private", "protected" };
+
 
 vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
     {"COMMENT", regex("^(//.*|/\\*[^*]*\\*+([^/*][^*]*\\*+)*/)")},
 
-    {"INCLUDE", regex("^#include")},
     {"LIBRARY", regex("^(<[^>]+>|\"[^\"]+\\.h\")"), 0},
-    {"USING", regex("^using")},
-    {"NAMESPACE", regex("^namespace")},
-    {"DEFINE", regex("^#define")},
 
-    {"INT", regex("^int")},
-    {"FLOAT", regex("^float")},
-    {"DOUBLE", regex("^double")},
-    {"CHAR", regex("^char")},
-    {"STRING", regex("^string")},
-    {"BOOL", regex("^bool")},
-    {"VOID", regex("^void")},
-
-    {"MAIN", regex("^main")},
-    {"RETURN", regex("^return")},
-
-    {"WHILE", regex("^while")},
-    {"DO", regex("^do")},
-    {"FOR", regex("^for")},
-    {"SWITCH", regex("^switch")},
-    {"CASE", regex("^case")},
-    {"DEFAULT", regex("^default")},
-    {"TRY", regex("^try")},
-    {"CATCH", regex("^catch")},
-    {"ELSEIF", regex("^else if")},
-    {"ELSE", regex("^else")},
-
-    {"TEMPLATE", regex("^template")},
-    {"STRUCT", regex("^struct")},
-    {"CLASS", regex("^class")},
-    {"PUBLIC", regex("^public")},
-    {"PRIVATE", regex("^private")},
-    {"PROTECTED", regex("^protected")},
-
-    {"STATIC", regex("^static")},
-    {"CONST", regex("^const")},
-    {"COUT", regex("^cout")},
-    {"CIN", regex("^cin")},
-    {"ENDL", regex("^endl")},
-    {"NEW", regex("^new")},
-    {"DELETE", regex("^delete")},
-    {"SIZEOF", regex("^sizeof")},
-    {"THIS", regex("^this")},
-
-    {"IDENTIFIER", regex("^[_A-Za-z][_A-Za-z0-9]*"), 0},
+    {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*"), 0},
 
     {"DECIMAL", regex("^[0-9]+\\.[0-9]+"), 0},
     {"INTEGER", regex("^[0-9]+"), 0},
     {"CHARACTER", regex("^'(\\.|[^'\\\\])'"), 0},
     {"STRLITERAL", regex("^\"([^\"\\\\]|\\\\.)*\""), 0},
-    {"TRUE", regex("^true")},
-    {"FALSE", regex("^false")},
 
     {"INCREMENT", regex("^\\+\\+")},
     {"DECREMENT", regex("^\\-\\-")},
@@ -149,8 +117,9 @@ static vector<token> tokenize(const string& code) {
 
         for (auto& rule : Rules) {
             if (regex_search(snippet, match, rule.Regex) && match.position() == 0) {
-                if (rule.type != "WHITESPACE") {
-                    if (rule.reserved) tokens.push_back({ rule.type });
+                if (rule.type != "WHITESPACE" && rule.type != "COMMENT") {
+                    if (KEYWORDS.find(match.str()) != KEYWORDS.end())
+                        tokens.push_back({ "KEYWORD", match.str() });
                     else tokens.push_back({ rule.type, match.str() });
                 }
                 i += match.length();
