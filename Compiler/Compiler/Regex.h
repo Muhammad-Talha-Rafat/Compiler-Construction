@@ -29,7 +29,7 @@ struct token {
 
 set<string> KEYWORDS = { "#include", "#define", "using", "namespace",
                         "int", "float", "double", "char", "string", "bool", "void",
-                        "main", "return", "endl", "cout", "cin",
+                        "main", "return", "endl", "cout", "cin", "auto",
                         "do", "while", "for", "break", "continue", "true", "false",
                         "if", "else if", "else", "switch", "case", "default", "try", "catch", "throw",
                         "static", "const", "new", "delete", "sizeof", "this",
