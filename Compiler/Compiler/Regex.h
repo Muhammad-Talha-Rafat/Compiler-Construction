@@ -18,7 +18,7 @@ struct token {
     string type;
     string value;
 
-    void print() {
+    void print() const {
         if (USERDEFINED.find(this->type) != USERDEFINED.end())
             cout << '<' << this->type << ": " << this->value << '>';
         else if (type == "KEYWORD") cout << '<' << this->value << '>';
