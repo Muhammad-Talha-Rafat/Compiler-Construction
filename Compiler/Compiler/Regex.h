@@ -12,13 +12,13 @@ struct rule {
     bool reserved = 1;
 };
 
-set<string> USERDEFINED = { "LIBRARY", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL" };
 
 struct token {
     string type;
     string value;
 
     void print() const {
+        set<string> USERDEFINED = { "LIBRARY", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL" };
         if (USERDEFINED.find(this->type) != USERDEFINED.end())
             cout << '<' << this->type << ": " << this->value << '>';
         else if (type == "KEYWORD") cout << '<' << this->value << '>';
@@ -35,7 +35,6 @@ set<string> KEYWORDS = { "#include", "#define", "using", "namespace",
                         "static", "const", "new", "delete", "sizeof", "this",
                         "class", "struct", "template", "enum", "public", "private", "protected" };
 
-
 vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
     {"COMMENT", regex("^(//.*|/\\*[^*]*\\*+([^/*][^*]*\\*+)*/)")},
@@ -49,7 +48,7 @@ vector<rule> Rules = {
     {"CHARACTER", regex("^'(\\.|[^'\\\\])'"), 0},
     {"STRLITERAL", regex("^\"([^\"\\\\]|\\\\.)*\""), 0},
 
-    {"INCREMENT", regex("^\\+\\+")},
+    {"INCREMENT", regex("^\\+\\+")}.
     {"DECREMENT", regex("^\\-\\-")},
 
     {"EQUALS", regex("^==")},
@@ -108,10 +107,10 @@ vector<rule> Rules = {
 
 static vector<token> tokenize(const string& code) {
     vector<token> tokens;
-    size_t i = 0;
+    size_t cursor = 0;
 
-    while (i < code.size()) {
-        string snippet = code.substr(i);
+    while (cursor < code.size()) {
+        string snippet = code.substr(cursor);
         smatch match;
         bool matched = false;
 
@@ -122,15 +121,15 @@ static vector<token> tokenize(const string& code) {
                         tokens.push_back({ "KEYWORD", match.str() });
                     else tokens.push_back({ rule.type, match.str() });
                 }
-                i += match.length();
+                cursor += match.length();
                 matched = true;
                 break;
             }
         }
 
         if (!matched) {
-            tokens.push_back({ "UNDEFINED", string(1, code[i]) });
-            i++;
+            tokens.push_back({ "UNDEFINED", string(1, code[cursor]) });
+            cursor++;
         }
     }
     return tokens;
