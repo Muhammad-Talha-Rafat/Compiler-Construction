@@ -1,18 +1,11 @@
-﻿#include <iostream>
-#include "Regex/regex.h"
-using namespace std;
-
-#define itu = "trash"; // true
-
-static int add(int a, int b) {
-    int c = a + b;
-    return c;
-}
-
-int main() {
-    int a = 7.0, b = 81;
-    char character = '$';
-    string str = "Real Madrid ";
-    cout << str << c << add(a, b) << 'B';
-    return 0;
+﻿void tricky() {
+    // single-line comment
+    string s = "hello\nworld\t\"quote\"";
+ 
+    int x = 5 & 3 | 2 ^ 1;
+    int π = 3;
+    string привет = "hi";
+ 
+    int 2bad = 5;       // invalid
+    float @oops = 1.2;  // invalid
 }
