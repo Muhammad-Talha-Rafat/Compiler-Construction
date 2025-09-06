@@ -9,7 +9,6 @@ using namespace std;
 struct rule {
     string type;
     regex Regex;
-    bool reserved = 1;
 };
 
 
@@ -39,16 +38,16 @@ vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
     {"COMMENT", regex("^(//.*|/\\*[^*]*\\*+([^/*][^*]*\\*+)*/)")},
 
-    {"LIBRARY", regex("^(<[^>]+>|\"[^\"]+\\.h\")"), 0},
+    {"LIBRARY", regex("^(<[^>]+>|\"[^\"]+\\.h\")")},
 
-    {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*"), 0},
+    {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*")},
 
-    {"DECIMAL", regex("^[0-9]+\\.[0-9]+"), 0},
-    {"INTEGER", regex("^[0-9]+"), 0},
-    {"CHARACTER", regex("^'(\\.|[^'\\\\])'"), 0},
-    {"STRLITERAL", regex("^\"([^\"\\\\]|\\\\.)*\""), 0},
+    {"DECIMAL", regex("^[0-9]+\\.[0-9]+")},
+    {"INTEGER", regex("^[0-9]+")},
+    {"CHARACTER", regex("^'(\\.|[^'\\\\])'")},
+    {"STRLITERAL", regex("^\"([^\"\\\\]|\\\\.)*\"")},
 
-    {"INCREMENT", regex("^\\+\\+")}.
+    {"INCREMENT", regex("^\\+\\+")},
     {"DECREMENT", regex("^\\-\\-")},
 
     {"EQUALS", regex("^==")},
