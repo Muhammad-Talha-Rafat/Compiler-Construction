@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <fstream>
 #include <string>
 #include <vector>
@@ -17,12 +17,17 @@ struct token {
     string value;
 
     void print() const {
-        set<string> USERDEFINED = { "LIBRARY", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL" };
+        set<string> USERDEFINED = { "LIBRARY", "HEADER", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL", "UNDEFINED"};
         if (USERDEFINED.find(this->type) != USERDEFINED.end())
             cout << '<' << this->type << ": " << this->value << '>';
         else if (type == "KEYWORD") cout << '<' << this->value << '>';
         else cout << '<' << this->type << '>';
-        if (value == "{" || value == "}" || value == ";" || type == "LIBRARY") cout << endl;
+        if (value == "{" || value == "}" || value == ";" || type == "LIBRARY" || type == "HEADER") cout << endl;
+    }
+
+    friend ostream& operator<<(ostream& out, const token& show) {
+        out << '<' << show.type << ": " << show.value << '>';
+        return out;
     }
 };
 
@@ -38,7 +43,8 @@ vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
     {"COMMENT", regex("^(//.*|/\\*[^*]*\\*+([^/*][^*]*\\*+)*/)")},
 
-    {"LIBRARY", regex("^(<[^>]+>|\"[^\"]+\\.h\")")},
+    {"LIBRARY", regex("^<[^>]+>")},
+    {"HEADER", regex("^\"[^\"]+\\.h\"")},
 
     {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*")},
 
@@ -104,7 +110,13 @@ vector<rule> Rules = {
     {"rBRACKET", regex("^\\]")}
 };
 
-static vector<token> tokenize(const string& code) {
+static vector<token> tokenize(const string& filename) {
+    ifstream file(filename);
+    string code((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    file.close();
+
+    if (!code.empty() && code[0] == '\xEF') code.erase(0, 3);
+
     vector<token> tokens;
     size_t cursor = 0;
 
@@ -116,7 +128,9 @@ static vector<token> tokenize(const string& code) {
         for (auto& rule : Rules) {
             if (regex_search(snippet, match, rule.Regex) && match.position() == 0) {
                 if (rule.type != "WHITESPACE" && rule.type != "COMMENT") {
-                    if (KEYWORDS.find(match.str()) != KEYWORDS.end())
+                    if (!tokens.empty() && tokens.back().value != "#include" && rule.type == "HEADER" )
+                        tokens.push_back({ "STRLITERAL", match.str() });
+                    else if (KEYWORDS.find(match.str()) != KEYWORDS.end())
                         tokens.push_back({ "KEYWORD", match.str() });
                     else tokens.push_back({ rule.type, match.str() });
                 }
@@ -132,16 +146,4 @@ static vector<token> tokenize(const string& code) {
         }
     }
     return tokens;
-}
-
-static void runWithRegex(const string& filename) {
-    ifstream file(filename);
-    string code((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-    file.close();
-
-    if (!code.empty() && code[0] == '\xEF') code.erase(0, 3);
-
-    vector<token> tokens = tokenize(code);
-
-    for (auto& i : tokens) i.print();
 }
