@@ -130,7 +130,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="noRegex.h" />
-    <ClInclude Include="Regex.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
