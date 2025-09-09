@@ -1,11 +1,22 @@
-﻿void tricky() {
-    // single-line comment
-    string s = "hello\nworld\t\"quote\"";
- 
-    int x = 5 & 3 | 2 ^ 1;
-    int π = 3;
-    string привет = "hi";
- 
-    int 2bad = 5;       // invalid
-    float @oops = 1.2;  // invalid
+﻿#include <iostream>
+#include "header.h"
+using namespace std;
+
+string name1 = "Ronaldo.h";
+string name2 = "Talha";
+
+class numbers
+{
+public:
+    int a;
+    int b;
+    void print() const {
+        cout << a << '/' << b;
+    }
+};
+
+int main() {
+    numbers pair{};
+    pair.a = 9, pair.b = 11;
+    pair.print();
 }
