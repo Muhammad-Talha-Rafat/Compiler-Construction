@@ -127,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="code.txt" />
+    <Text Include="Grammer.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="noRegex.h" />

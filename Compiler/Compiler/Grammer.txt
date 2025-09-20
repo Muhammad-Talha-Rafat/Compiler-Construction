@@ -1,0 +1,92 @@
+﻿
+========================================= EXLCUSION LIST ==========================================
+
+// other libaries & functions ----- <vector>, queue, .front(), ...
+// for loop auto ------------------ for (auto i; ...
+// for loop 1+ inits --------------	for (int i = 0, j = 0; ...
+// double input ------------------- cin >> num1 >> num2;
+// multiple variable handling ----- int a, b, c; ...
+// operations --------------------- >>, <<, >>=, <<=,
+// -------------------------------- &, |, !, ^, ~, &=, |=, ^=,
+// -------------------------------- ::, ->, *, new, delete, sizeof, ...
+// arrays/pointers ---------------- char* alphabets ..., numbers[3], ...
+// other objects ------------------ enum, templates, ...
+// object member access ----------- struct.variable, class.function(...)
+// object constructors ------------ class(str a, str b) :token(a), value(b) {}
+// jump statements ---------------- break, continue
+// switch cases ------------------- switch (...) case 1: ... default: ...
+// exception handling ------------- try {...} catch {...} throw {...}
+
+===================================================================================================
+
+program			→ headers declarations main
+
+headers			→ header headers | header
+header			→ <#include>(<LIBRARY>|<HEADER>) | <using><namespace><IDENTIFIER><;>
+
+declarations	→ declaration declarations | ε
+declaration		→ declare | function | object | define
+define			→ <#define><IDENTIFIER> literal
+
+object			→ (<class>|<struct>)<IDENTIFIER><{> objBody <}><;>
+objBody			→ objBlock objBody | ε
+objBlock		→ access <:> members
+members			→ member members | ε
+member			→ declare | function
+access			→ <private>|<public>|<protected>
+
+main			→ <int><main><(><)><{> statements (return | ε) <}>
+function		→ (<const>|<static>|ε) type <IDENTIFIER><(> arguments <)><{> statements (return | ε) <}>
+declare			→ (<const>|<static>|ε) type <IDENTIFIER>(<ASSIGN> expression | ε)<;>
+type			→ <int>|<float>|<double>|<char>|<string>|<bool>|<void>
+
+arguments		→ argument (<,> arguments| ε)
+argument		→ type <IDENTIFIER> (<ASSIGN> expression | ε)
+
+statements		→ statement statements | ε
+statement		→ assignment | declare | loops | if | block | call_statement | iostream
+
+iostream		→ cout | cin
+cin				→ <cin><RIGHTSHIFT><IDENTIFIER><;>
+cout			→ <cout> ostrings <;>
+ostrings		→ ostring ostrings | ostring
+ostring			→ <LEFTSHIFT> expression
+
+assignment		→ <IDENTIFIER> assign_op expression <;>
+expression		→ term subterm
+term			→ factor subfactor
+subterm			→ add_sub term subterm | ε
+factor			→ <(> expression <)> | <IDENTIFIER> | literal | function_call | increment | decrement
+subfactor		→ mul_div_mod factor subfactor | ε
+
+literal			→ <INTEGER>|<DECIMAL>|<CHARACTER>|<STRLITERAL>|<true>|<false>
+increment		→ <INCREMENT><IDENTIFIER> | <IDENTIFIER><INCREMENT>
+decrement		→ <DECREMENT><IDENTIFIER> | <IDENTIFIER><DECREMENT>
+
+block			→ <{> statements <}>
+return			→ <return> (expression | ε) <;>
+
+loops			→ for | while | dowhile
+for				→ <for><(> (type | ε) <IDENTIFIER> <ASSIGN> expression <;> conditions <;> update <)> block
+while			→ <while><(> conditions <)> block
+dowhile			→ <do> block <while><(> conditions <)><;>
+
+if				→ <if><(> conditions <)> block elseif else
+elseif			→ <else if><(> conditions <)> block elseif | ε
+else			→ <else> block | ε
+
+call_statement	→ function_call <;>
+function_call	→ <IDENTIFIER><(> parameters <)>
+parameters		→ parameter (<,> parameters | ε)
+parameter		→ expression | funcion_call
+
+conditions		→ condition (logical_op conditions | ε)
+condition		→ expression compare_op expression | <(> conditions <)>
+
+update			→ increment |  decrement | <IDENTIFIER> assign_op expression
+
+compare_op		→ <EQUALS>|<NOTEQUAL>|<GREATERorEQUAL>|<SMALLERorEQUAL>|<GREATERTHAN>|<SMALLERTHAN>
+logical_op		→ <AND_LOGIC>|<OR_LOGIC>
+assign_op		→ <ASSIGN>|<ADD_ASSIGN>|<SUB_ASSIGN>|<MUL_ASSIGN>|<DIV_ASSIGN>|<MOD_ASSIGN>
+add_sub			→ <ADD>|<SUBTRACT>
+mul_div_mod		→ <MULTIPLY>|<DIVIDE>|<MOD>
