@@ -1,22 +1,27 @@
-﻿#include <iostream>
+#include <iostream>
 #include "header.h"
 using namespace std;
 
-string name1 = "Ronaldo.h";
-string name2 = "Talha";
+int add(int a, int b) {
+    return a + b;
+}
 
-class numbers
-{
+class Calculator {
+private:
+    int result;
 public:
-    int a;
-    int b;
-    void print() const {
-        cout << a << '/' << b;
+    int multiply(int x, int y) {
+        return x * y;
     }
 };
 
 int main() {
-    numbers pair{};
-    pair.a = 9, pair.b = 11;
-    pair.print();
+    int num = 5;
+    cout << "Result: " << add(num, 3) << endl;
+    for(int i = 0; i < 10; i++) {
+        if(i % 2 == 0) {
+            cout << i << " ";
+        }
+    }
+    return 0;
 }
