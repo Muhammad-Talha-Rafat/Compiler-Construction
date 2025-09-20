@@ -26,6 +26,9 @@
     <Text Include="code.txt">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="Grammer.txt">
+      <Filter>Header Files\Regex</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
