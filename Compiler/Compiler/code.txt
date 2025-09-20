@@ -11,7 +11,8 @@ private:
     int result;
 public:
     int multiply(int x, int y) {
-        return x * y;
+        result = x * y;
+        return result;
     }
 };
 
