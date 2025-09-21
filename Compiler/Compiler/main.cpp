@@ -8,11 +8,10 @@ int main() {
     string file = "code.txt";
 
     vector<token> tokens = tokenize(file);
-    //for (auto& i : tokens) i.print();
+    //for (auto& i : tokens) cout << i;
 
-    Parser parser = Parser(tokens);
-
-    cout << parser.isHeaders();
+    Parser parser(tokens);
+    parser.parse();
 
     return 0;
 }
