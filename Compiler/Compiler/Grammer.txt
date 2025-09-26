@@ -37,9 +37,10 @@ member			→ declare | function
 access			→ <private>|<public>|<protected>
 
 main			→ <int><main><(><)><{> statements (return | ε) <}>
-function		→ (<const>|<static>|ε) type <IDENTIFIER><(> arguments <)><{> statements (return | ε) <}>
+function		→ (<const>|<static>|ε) return_Type <IDENTIFIER><(> arguments <)><{> statements (return | ε) <}>
+return_type		→ type | <void>
 declare			→ (<const>|<static>|ε) type <IDENTIFIER>(<ASSIGN> expression | ε)<;>
-type			→ <int>|<float>|<double>|<char>|<string>|<bool>|<void>
+type			→ <int>|<float>|<double>|<char>|<string>|<bool>
 
 arguments		→ argument (<,> arguments| ε)
 argument		→ type <IDENTIFIER> (<ASSIGN> expression | ε)

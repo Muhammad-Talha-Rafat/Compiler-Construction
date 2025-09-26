@@ -104,8 +104,8 @@ vector<rule> Rules = {
 
     {"lBRACE", regex("^\\(")},
     {"rBRACE", regex("^\\)")},
-    {"lPARANTHESIS", regex("^\\{")},
-    {"rPARANTHESIS", regex("^\\}")},
+    {"lPARENTHESIS", regex("^\\{")},
+    {"rPARENTHESIS", regex("^\\}")},
     {"lBRACKET", regex("^\\[")},
     {"rBRACKET", regex("^\\]")}
 };
