@@ -4,21 +4,8 @@
 #include <stdexcept>
 #include <set>
 #include "Tokenizer.h"
-//#include "ParseObject.h"
 using namespace std;
 
-
-/// UnexpectedEOF,
-/// ExpectedTypeToken,
-/// UndefinedToken(Token),
-/// ExpectedIdentifier,
-/// UnexpectedToken(Token),
-/// ExpectedFloatLit,
-/// ExpectedIntLit,
-/// ExpectedStringLit,
-/// ExpectedCharacterLit,
-/// ExpectedBoolLit,
-/// ExpectedExpression(expected),
 
 
 runtime_error UnexpectedEOF(const string& expected) {
@@ -207,43 +194,19 @@ private:
 	void parse_factor(const string& type);
 	void parse_subfactor(const string& type);
 
-	void parse_increment() {
-		indent++;
-		printRule("increment {");
-		if (currentToken().type == "INCREMENT") { // ++id
-			expect("INCREMENT");
-			expect("IDENTIFIER");
-		}
-		else if (currentToken().type == "IDENTIFIER") { // id++
-			expect("IDENTIFIER");
-			expect("INCREMENT");
-		}
-		else throw UnexpectedToken("IDENTIFIER", currentToken());
-		printRule("}");
-		indent--;
-	}
-
-	void parse_decrement() {
-		indent++;
-		printRule("decrement {");
-		if (currentToken().type == "DECREMENT") { // --id
-			expect("DECREMENT");
-			expect("IDENTIFIER");
-		}
-		else if (currentToken().type == "IDENTIFIER") { // id--
-			expect("IDENTIFIER");
-			expect("DECREMENT");
-		}
-		else throw UnexpectedToken("IDENTIFIER", currentToken());
-		printRule("}");
-		indent--;
-	}
+	void parse_functionCall();
+	void parse_parameters();
+	void parse_parameter();
 
 	//void parse_object();
 	//void parse_objBody();
 	//void parse_objBlock();
 
-	//void parse_function();
+	void parse_function();
+	void parse_voidfunction();
+	void parse_mainfunction();
+	void parse_arguments();
+	void parse_argument();
 
 
 public:
@@ -265,3 +228,4 @@ public:
 };
 
 #include "ParseDeclare.h"
+#include "ParseFunction.h"

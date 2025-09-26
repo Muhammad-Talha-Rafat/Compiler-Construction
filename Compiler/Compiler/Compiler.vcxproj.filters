@@ -50,6 +50,9 @@
     <ClInclude Include="ParseDeclare.h">
       <Filter>Header Files\Regex</Filter>
     </ClInclude>
+    <ClInclude Include="ParseFunction.h">
+      <Filter>Header Files\Regex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Compiler.rc">

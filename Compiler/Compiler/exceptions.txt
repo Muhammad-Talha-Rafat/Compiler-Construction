@@ -1,11 +1,9 @@
 ﻿
-lexer parses a lexeme "2number" as "int" and "IDENTIFIER",
-instead of "UNDEFINED"
-left for parser to handle it
+lexer parses a lexeme "7number" as "INTEGER" and "IDENTIFIER",
+instead of "UNDEFINED", leaves it for parser to handle it
 
 not every single operation is there
-
-if complex operations like sizof(), ::, are even there, they're
+if complex operations like sizeof(), ::, are even there, they're
 made tokens of, but unable to parse through
 
 Program works in such way-
@@ -16,3 +14,16 @@ Other than only that, it can work with out of order case as well
 
 Declarations will not give speacial case runtime errors, i.e
 "ExpectedIntLit" if expressions are assigned to variables. Yet.
+
+bool variable declaration works in a weird way, it can accept "true",
+"false", also an identifier, as it can also be "true" or "false",
+a function, or an expression (we don't know if it returns a boolean)
+
+Cannot play with variablels in global scope, i.e
+1	valid = true;
+2	i++;
+3	void add(int a, int b) { ... }
+4	...
+
+default assignments are not supported
+	int add(int a = 9, int b = 11)
