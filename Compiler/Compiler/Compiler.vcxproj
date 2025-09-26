@@ -133,8 +133,10 @@
   <ItemGroup>
     <ClInclude Include="noRegex.h" />
     <ClInclude Include="ParseDeclare.h" />
+    <ClInclude Include="ParseFunction.h" />
     <ClInclude Include="ParseObject.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="ParseStatement.h" />
     <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

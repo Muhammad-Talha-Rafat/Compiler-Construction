@@ -1,14 +1,13 @@
-#include <iostream>
-#include "header.h"
-using namespace std;
+// #include <iostream>
+// #include "header.h"
+// using namespace std;
 
-#define GOAT "Ronaldo"
-#define NUMBER 7
+// #define GOAT "Ronaldo"
+// #define NUMBER 7
 
-const string name = "Ronaldo";
-int age = 40;
-static float rating = 97.9;
-double overall = 98.6;
-char category = 'S';
-bool male = true;
-bool female = false;
+// int number = 7;
+
+int main() {
+	cout << ass << 7 + ass << true;
+	return 0;
+}
