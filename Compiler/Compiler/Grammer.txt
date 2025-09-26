@@ -17,6 +17,7 @@
 // switch cases ------------------- switch (...) case 1: ... default: ...
 // exception handling ------------- try {...} catch {...} throw {...}
 
+(may not include more)
 ===================================================================================================
 
 program			→ headers declarations main
