@@ -1,0 +1,18 @@
+﻿
+lexer parses a lexeme "2number" as "int" and "IDENTIFIER",
+instead of "UNDEFINED"
+left for parser to handle it
+
+not every single operation is there
+
+if complex operations like sizof(), ::, are even there, they're
+made tokens of, but unable to parse through
+
+Program works in such way-
+	headers → declarations → main
+anything out of that order will result in an error
+
+Other than only that, it can work with out of order case as well
+
+Declarations will not give speacial case runtime errors, i.e
+"ExpectedIntLit" if expressions are assigned to variables. Yet.
