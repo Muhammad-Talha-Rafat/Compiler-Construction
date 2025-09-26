@@ -42,11 +42,19 @@ return_type		→ type | <void>
 declare			→ (<const>|<static>|ε) type <IDENTIFIER>(<ASSIGN> expression | ε)<;>
 type			→ <int>|<float>|<double>|<char>|<string>|<bool>
 
+declare			→ (<const>|<static>|ε) return_type <IDENTIFIER> tail
+tail			→ (<ASSIGN> expression | ε) <;> | <(> statements (return | ε) <)>
+
+declaration		→ declare | (voidfunction | ε) | object | define
+declare			→ (<const>|<static>|ε) type <IDENTIFIER> tail
+tail			→ (<ASSIGN> expression | ε) <;> | <(> arguments <)><{> statements return <}>
+voidfunction	→ <void><IDENTIFIER><(> arguments <)><{> statements <}>
+
 arguments		→ argument (<,> arguments| ε)
-argument		→ type <IDENTIFIER> (<ASSIGN> expression | ε)
+argument		→ type <IDENTIFIER>
 
 statements		→ statement statements | ε
-statement		→ assignment | declare | loops | if | block | call_statement | iostream
+statement		→ assignment | declare | loops | if | block | call_statement | iostream | increment <;> | decrement <;>
 
 iostream		→ cout | cin
 cin				→ <cin><RIGHTSHIFT><IDENTIFIER><;>

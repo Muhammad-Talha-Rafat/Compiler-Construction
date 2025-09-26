@@ -16,8 +16,10 @@ struct token {
     string type;
     string value;
 
+    token(const string& a, const string& b) :type(a), value(b) {}
+
     void print() const {
-        set<string> USERDEFINED = { "LIBRARY", "HEADER", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL", "UNDEFINED"};
+        set<string> USERDEFINED = { "LIBRARY", "HEADER", "IDENTIFIER", "DECIMAL", "INTEGER", "CHARACTER", "STRLITERAL", "UNDEFINED" };
         if (USERDEFINED.find(this->type) != USERDEFINED.end())
             cout << '<' << this->type << ": " << this->value << '>';
         else if (type == "KEYWORD") cout << '<' << this->value << '>';
@@ -28,6 +30,10 @@ struct token {
     friend ostream& operator<<(ostream& out, const token& show) {
         out << '<' << show.type << ": " << show.value << '>';
         return out;
+    }
+
+    friend bool operator==(const token& lhs, const token& rhs) {
+        return lhs.type == rhs.type && lhs.value == rhs.value;
     }
 };
 
