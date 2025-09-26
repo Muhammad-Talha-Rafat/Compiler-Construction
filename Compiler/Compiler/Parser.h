@@ -4,21 +4,8 @@
 #include <stdexcept>
 #include <set>
 #include "Tokenizer.h"
-//#include "ParseObject.h"
 using namespace std;
 
-
-/// UnexpectedEOF,
-/// ExpectedTypeToken,
-/// UndefinedToken(Token),
-/// ExpectedIdentifier,
-/// UnexpectedToken(Token),
-/// ExpectedFloatLit,
-/// ExpectedIntLit,
-/// ExpectedStringLit,
-/// ExpectedCharacterLit,
-/// ExpectedBoolLit,
-/// ExpectedExpression(expected),
 
 
 runtime_error UnexpectedEOF(const string& expected) {
@@ -207,43 +194,26 @@ private:
 	void parse_factor(const string& type);
 	void parse_subfactor(const string& type);
 
-	void parse_increment() {
-		indent++;
-		printRule("increment {");
-		if (currentToken().type == "INCREMENT") { // ++id
-			expect("INCREMENT");
-			expect("IDENTIFIER");
-		}
-		else if (currentToken().type == "IDENTIFIER") { // id++
-			expect("IDENTIFIER");
-			expect("INCREMENT");
-		}
-		else throw UnexpectedToken("IDENTIFIER", currentToken());
-		printRule("}");
-		indent--;
-	}
-
-	void parse_decrement() {
-		indent++;
-		printRule("decrement {");
-		if (currentToken().type == "DECREMENT") { // --id
-			expect("DECREMENT");
-			expect("IDENTIFIER");
-		}
-		else if (currentToken().type == "IDENTIFIER") { // id--
-			expect("IDENTIFIER");
-			expect("DECREMENT");
-		}
-		else throw UnexpectedToken("IDENTIFIER", currentToken());
-		printRule("}");
-		indent--;
-	}
+	void parse_functionCall();
+	void parse_parameters();
+	void parse_parameter();
 
 	//void parse_object();
 	//void parse_objBody();
 	//void parse_objBlock();
 
-	//void parse_function();
+	void parse_function(const string& type);
+	void parse_voidfunction();
+	void parse_mainfunction();
+	void parse_arguments();
+	void parse_argument();
+
+	void parse_statements();
+	void parse_statement();
+	void parse_iostream(const string& stream);
+	void parse_ostring();
+
+	void parse_return(const string& type);
 
 
 public:
@@ -255,7 +225,6 @@ public:
 		try {
 			parse_headers();
 			parse_declarations();
-			//parse_main();
 			printRule("}");
 		}
 		catch (const runtime_error& e) {
@@ -265,3 +234,5 @@ public:
 };
 
 #include "ParseDeclare.h"
+#include "ParseFunction.h"
+#include "ParseStatement.h"

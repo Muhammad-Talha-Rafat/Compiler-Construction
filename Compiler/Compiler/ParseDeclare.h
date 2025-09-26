@@ -11,25 +11,53 @@ void Parser::parse_declare() {
 		expect(currentToken().type);
 		printToken(true);
 	}
-	if (!types.count(currentToken().type)) {
+	if (types.count(currentToken().value)) {
 		type = currentToken().value;
 		expect(currentToken().type);
 		printToken(true);
-
+	}
+	else if (currentToken().value == "void") {
+		printRule("void {");
+		indent++;
+		parse_voidfunction();
+		indent--;
+		printRule("}");
+		indent--;
+		printRule("}"); // "declarations" block: complete
+		indent--;
+		return;
 	}
 	else throw ExpectedTypeToken();
+	if (currentToken() == token{ "KEYWORD", "main" }) {
+		parse_mainfunction();
+		printRule("}"); // "declarations" block: complete
+		indent--;
+		return;
+	}
 	expect("IDENTIFIER");
 	printToken(true);
 	if (currentToken().type == "ASSIGN") {
+		printRule("variable {");
+		indent++;
 		expect(currentToken().type);
 		if (currentToken().type == "SEMICOLON") throw ExpectedExpression(type);
 		printToken(true);
 		parse_expression(type);
+		expect("SEMICOLON");
+		printToken(false);
+		indent--;
+		printRule("}");
+		indent--;
+	}
+	else if (currentToken().type == "lBRACE") {
+		printRule("function {");
+		indent++;
+		parse_function(type);
+		indent--;
+		printRule("}");
+		indent--;
 	}
 	else if (currentToken().type != "ASSIGN" && currentToken().type != "SEMICOLON") throw UnexpectedToken(";", tokens[cursor]);
-	expect("SEMICOLON");
-	printToken(false);
-	indent--;
 	printRule("}");
 	indent--;
 }
@@ -76,8 +104,10 @@ void Parser::parse_factor(const string& type) {
 		expect("rBRACE");
 		printToken(false);
 	}
-	else if (literals.count(tokens[cursor].type)) {
-		if (type == "int" && tokens[cursor].type != "INTEGER")
+	else if (literals.count(tokens[cursor].type) || tokens[cursor].value == "true" || tokens[cursor].value == "false") {
+		if (type == "bool" && tokens[cursor].value != "true" && tokens[cursor].value != "false")
+			throw ExpectedBooleanValue(tokens[cursor].type);
+		else if (type == "int" && tokens[cursor].type != "INTEGER")
 			throw ExpectedIntLit(tokens[cursor].type);
 		else if ((type == "float" || type == "double") && tokens[cursor].type != "DECIMAL")
 			throw ExpectedFloatLit(tokens[cursor].type);
@@ -90,19 +120,48 @@ void Parser::parse_factor(const string& type) {
 			printToken(false);
 		}
 	}
-	else if (type == "bool") {
-		if (tokens[cursor].value != "true" && tokens[cursor].value != "false")
-			throw ExpectedBooleanValue(tokens[cursor].type);
-		else {
-			expect(currentToken().type);
-			printToken(false);
-		}
+	else if (currentToken().type == "INCREMENT") {
+		printRule("increment {");
+		indent++;
+		expect(currentToken().type);
+		printToken(true);
+		expect("IDENTIFIER");
+		printToken(false);
+		indent--;
+		printRule("}");
 	}
-	else if (currentToken().type == "INCREMENT") parse_increment();
-	else if (currentToken().type == "DECREMENT") parse_decrement();
+	else if (currentToken().type == "DECREMENT") {
+		printRule("decrement {");
+		indent++;
+		expect(currentToken().type);
+		printToken(true);
+		expect("IDENTIFIER");
+		printToken(false);
+		indent--;
+		printRule("}");
+	}
 	else if (currentToken().type == "IDENTIFIER") {
 		expect(currentToken().type);
-		printToken(false);
+		if (currentToken().type == "INCREMENT") {
+			printRule("increment {");
+			indent++;
+			printToken(true);
+			expect(currentToken().type);
+			printToken(false);
+			indent--;
+			printRule("}");
+		}
+		else if (currentToken().type == "DECREMENT") {
+			printRule("decrement {");
+			indent++;
+			printToken(true);
+			expect(currentToken().type);
+			printToken(false);
+			indent--;
+			printRule("}");
+		}
+		else if (currentToken().type == "lBRACE") parse_functionCall();
+		else printToken(false);
 	}
 	indent--;
 	printRule("}");
@@ -122,4 +181,41 @@ void Parser::parse_subfactor(const string& type) {
 		printRule("}");
 		indent--;
 	}
+}
+
+void Parser::parse_functionCall() {
+	printRule("functionCall {");
+	indent++;
+	printToken(true);
+	expect("lBRACE");
+	printToken(true);
+	if (currentToken().type == "IDENTIFIER" || literals.count(currentToken().type))
+		parse_parameters();
+	else if (tokens[cursor].value == "true" || tokens[cursor].value == "false")
+		parse_parameters();
+	expect("rBRACE");
+	printToken(true);
+	indent--;
+	printRule("}");
+}
+
+void Parser::parse_parameters() {
+	printRule("parameters {");
+	indent++;
+	parse_parameter();
+	while (currentToken().type == "COMMA") {
+		expect(currentToken().type);
+		printToken(true);
+		parse_parameter();
+	}
+	indent--;
+	printRule("}");
+}
+
+void Parser::parse_parameter() {
+	printRule("parameter {");
+	indent++;
+	parse_expression("");
+	indent--;
+	printRule("}");
 }
