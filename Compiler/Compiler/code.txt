@@ -8,5 +8,6 @@
 // int number = 7;
 
 int main() {
-
+	cout << ass << 7 + ass << true;
+	return 0;
 }

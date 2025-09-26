@@ -27,3 +27,8 @@ Cannot play with variablels in global scope, i.e
 
 default assignments are not supported
 	int add(int a = 9, int b = 11)
+
+return statements can only parse literal type values, not expressions
+or identifiers
+	int → return 7;			parsed
+	int → return number;	error, even if "number" holds an integer

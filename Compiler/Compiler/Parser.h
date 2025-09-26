@@ -202,11 +202,18 @@ private:
 	//void parse_objBody();
 	//void parse_objBlock();
 
-	void parse_function();
+	void parse_function(const string& type);
 	void parse_voidfunction();
 	void parse_mainfunction();
 	void parse_arguments();
 	void parse_argument();
+
+	void parse_statements();
+	void parse_statement();
+	void parse_iostream(const string& stream);
+	void parse_ostring();
+
+	void parse_return(const string& type);
 
 
 public:
@@ -218,7 +225,6 @@ public:
 		try {
 			parse_headers();
 			parse_declarations();
-			//parse_main();
 			printRule("}");
 		}
 		catch (const runtime_error& e) {
@@ -229,3 +235,4 @@ public:
 
 #include "ParseDeclare.h"
 #include "ParseFunction.h"
+#include "ParseStatement.h"
