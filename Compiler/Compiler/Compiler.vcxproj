@@ -127,10 +127,13 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="code.txt" />
+    <Text Include="exceptions.txt" />
     <Text Include="Grammer.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="noRegex.h" />
+    <ClInclude Include="ParseDeclare.h" />
+    <ClInclude Include="ParseObject.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="resource.h" />
