@@ -2,7 +2,7 @@
 using namespace std;
 
 
-void Parser::parse_function() {
+void Parser::parse_function(const string& type) {
 	expect("lBRACE");
 	printToken(true);
 	if (currentToken().type != "rBRACE") // means, there ARE arguments
@@ -12,7 +12,7 @@ void Parser::parse_function() {
 	expect("lPARENTHESIS");
 	printToken(true);
 	// statemnts
-	// return
+	parse_return(type);
 	expect("rPARENTHESIS");
 	printToken(true);
 }
@@ -32,12 +32,14 @@ void Parser::parse_voidfunction() {
 	printToken(true);
 	// statements
 	expect("rPARENTHESIS");
-	printToken(true);
+	printToken(false);
 }
 
 void Parser::parse_mainfunction() {
-	expect(currentToken().type);
+	expect(currentToken().type, "main");
 	printToken(true);
+	if (tokens[cursor - 2].value != "int")
+		throw runtime_error("Syntax error: 'main' can only have return type 'int'");
 	expect("lBRACE");
 	printToken(true);
 	if (currentToken().type != "rBRACE")
@@ -46,10 +48,11 @@ void Parser::parse_mainfunction() {
 	printToken(true);
 	expect("lPARENTHESIS");
 	printToken(true);
-	// statements
-	// return | ε
+	parse_statements();
+	if (currentToken() == token{ "KEYWORD", "return" })
+		parse_return("int");
 	expect("rPARENTHESIS");
-	printToken(true);
+	printToken(false);
 	indent--;
 }
 
@@ -85,4 +88,29 @@ void Parser::parse_argument() {
 	indent--;
 	printRule("}");
 	indent--;
+}
+
+void Parser::parse_return(const string& type) {
+	printRule("return {");
+	indent++;
+	expect(currentToken().type);
+	printToken(true);
+	if (currentToken().type != type) {
+		if (type == "bool" && currentToken().value != "true" && currentToken().value != "false")
+			throw ExpectedBooleanValue(currentToken().type);
+		else if (type == "int" && currentToken().type != "INTEGER")
+			throw ExpectedIntLit(currentToken().type);
+		else if ((type == "float" || type == "double") && currentToken().type != "DECIMAL")
+			throw ExpectedFloatLit(currentToken().type);
+		else if (type == "char" && currentToken().type != "CHARACTER")
+			throw ExpectedCharacterLit(currentToken().type);
+		else if (type == "string" && currentToken().type != "STRLITERAL")
+			throw ExpectedStringLit(currentToken().type);
+	}
+	expect(currentToken().type);
+	printToken(true);
+	expect("SEMICOLON");
+	printToken(false);
+	indent--;
+	printRule("}");
 }

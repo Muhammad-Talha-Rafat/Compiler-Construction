@@ -28,7 +28,7 @@ void Parser::parse_declare() {
 		return;
 	}
 	else throw ExpectedTypeToken();
-	if (currentToken() == token{"KEYWORD", "main"}) {
+	if (currentToken() == token{ "KEYWORD", "main" }) {
 		parse_mainfunction();
 		printRule("}"); // "declarations" block: complete
 		indent--;
@@ -52,7 +52,7 @@ void Parser::parse_declare() {
 	else if (currentToken().type == "lBRACE") {
 		printRule("function {");
 		indent++;
-		parse_function();
+		parse_function(type);
 		indent--;
 		printRule("}");
 		indent--;
@@ -120,12 +120,6 @@ void Parser::parse_factor(const string& type) {
 			printToken(false);
 		}
 	}
-	//else if (type == "bool") {
-	//	else {
-	//		expect(currentToken().type);
-	//		printToken(false);
-	//	}
-	//}
 	else if (currentToken().type == "INCREMENT") {
 		printRule("increment {");
 		indent++;
@@ -209,10 +203,10 @@ void Parser::parse_parameters() {
 	printRule("parameters {");
 	indent++;
 	parse_parameter();
-	if (currentToken().type == "COMMA") {
+	while (currentToken().type == "COMMA") {
 		expect(currentToken().type);
 		printToken(true);
-		parse_parameters();
+		parse_parameter();
 	}
 	indent--;
 	printRule("}");
