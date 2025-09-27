@@ -70,6 +70,7 @@ private:
 	vector<token> tokens;
 	size_t cursor;
 	int indent = 0;
+	bool main = false;
 
 	set<string> types = { "int", "float", "double", "char", "string", "bool" };
 	set<string> literals = { "INTEGER", "DECIMAL", "STRLITERAL", "CHARACTER", "true", "false" };
@@ -165,6 +166,7 @@ private:
 			//else if (currentToken("class").value == "class" || currentToken("struct").value == "struct") parse_object();
 			else parse_declare();
 		}
+		if (main == false) throw runtime_error("Runtime error: program must contain a 'main' function");
 		printRule("}");
 		indent--;
 	}
@@ -212,6 +214,7 @@ private:
 	void parse_statement();
 	void parse_iostream(const string& stream);
 	void parse_ostring();
+	void parse_condition();
 
 	void parse_return(const string& type);
 

@@ -8,7 +8,7 @@ made tokens of, but unable to parse through
 
 Program works in such way-
 	headers → declarations → main
-anything out of that order will result in an error
+anything out of that order isn't allowed
 
 Other than only that, it can work with out of order case as well
 
@@ -19,7 +19,7 @@ bool variable declaration works in a weird way, it can accept "true",
 "false", also an identifier, as it can also be "true" or "false",
 a function, or an expression (we don't know if it returns a boolean)
 
-Cannot play with variablels in global scope, i.e
+Cannot play with variables in global scope, i.e
 1	valid = true;
 2	i++;
 3	void add(int a, int b) { ... }
@@ -28,7 +28,16 @@ Cannot play with variablels in global scope, i.e
 default assignments are not supported
 	int add(int a = 9, int b = 11)
 
+each block requires parenthseis encapsulation even if its only one line
+	if (num > 7) do ts		disallowed
+	if (num > 7) { do ts }	not allowed
+
 return statements can only parse literal type values, not expressions
 or identifiers
 	int → return 7;			parsed
 	int → return number;	error, even if "number" holds an integer
+
+conditions can only support "IDENTIFIER" and "LITERALS" conditions
+	7 > num		allowed
+	num == 7	allowed
+	valid(...)	allowed
