@@ -17,7 +17,7 @@ The project demonstrates lexical analysis, parsing, and basic error handling for
   - Rejects programs that do not follow the specified grammar.
 
 - **Grammar Rules**:  
-  The grammar (defined in [`Grammer.txt`](./Grammer.txt)) includes:
+  The grammar (defined in [`Grammer.txt`](Compiler/Compiler/Grammer.txt)) includes:
   - Program structure: `headers → declarations → main`  
   - Declarations: variables, functions, objects, `#define`  
   - Control flow: `if/else`, `while`, `do-while`, `for`  
@@ -30,7 +30,7 @@ The project demonstrates lexical analysis, parsing, and basic error handling for
 
 ## ⚠️ Limitations & Exceptions
 
-As outlined in [`exceptions.txt`](./exceptions.txt):
+As outlined in [`exceptions.txt`](Compiler/Compiler/exceptions.txt):
 
 - Some invalid lexemes are tokenized but deferred for parser error handling (e.g., `7number`).  
 - Advanced operations like `sizeof`, `::`, or templates are tokenized but not parsed.  
