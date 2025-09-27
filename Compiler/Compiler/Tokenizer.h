@@ -41,7 +41,7 @@ set<string> KEYWORDS = { "#include", "#define", "using", "namespace",
                         "int", "float", "double", "char", "string", "bool", "void",
                         "main", "return", "endl", "cout", "cin", "auto",
                         "do", "while", "for", "break", "continue", "true", "false",
-                        "if", "else if", "else", "switch", "case", "default", "try", "catch", "throw",
+                        "if", "else", "switch", "case", "default", "try", "catch", "throw",
                         "static", "const", "new", "delete", "sizeof", "this",
                         "class", "struct", "template", "enum", "public", "private", "protected" };
 
@@ -49,9 +49,10 @@ vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
     {"COMMENT", regex("^(//.*|/\\*[^*]*\\*+([^/*][^*]*\\*+)*/)")},
 
-    {"LIBRARY", regex("^<[^>]+>")},
+    {"LIBRARY", regex("^<[^>\n]+>")},
     {"HEADER", regex("^\"[^\"]+\\.h\"")},
 
+    {"ELSEIF", regex(R"(^else\b\s+if\b)")},
     {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*")},
 
     {"DECIMAL", regex("^[0-9]+\\.[0-9]+")},
@@ -136,7 +137,7 @@ static vector<token> tokenize(const string& filename) {
                 if (rule.type != "WHITESPACE" && rule.type != "COMMENT") {
                     if (!tokens.empty() && tokens.back().value != "#include" && rule.type == "HEADER" )
                         tokens.push_back({ "STRLITERAL", match.str() });
-                    else if (KEYWORDS.find(match.str()) != KEYWORDS.end())
+                    else if (KEYWORDS.find(match.str()) != KEYWORDS.end() || rule.type == "ELSEIF")
                         tokens.push_back({ "KEYWORD", match.str() });
                     else tokens.push_back({ rule.type, match.str() });
                 }
