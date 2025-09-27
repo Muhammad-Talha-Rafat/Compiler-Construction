@@ -29,6 +29,7 @@ void Parser::parse_declare() {
 	}
 	else throw ExpectedTypeToken();
 	if (currentToken() == token{ "KEYWORD", "main" }) {
+		this->main = true;
 		parse_mainfunction();
 		printRule("}"); // "declarations" block: complete
 		indent--;
@@ -47,7 +48,6 @@ void Parser::parse_declare() {
 		printToken(false);
 		indent--;
 		printRule("}");
-		indent--;
 	}
 	else if (currentToken().type == "lBRACE") {
 		printRule("function {");
@@ -55,14 +55,18 @@ void Parser::parse_declare() {
 		parse_function(type);
 		indent--;
 		printRule("}");
-		indent--;
+	}
+	else if (currentToken().type == "SEMICOLON") {
+		expect(currentToken().type);
+		printToken(false);
 	}
 	else if (currentToken().type != "ASSIGN" && currentToken().type != "SEMICOLON") throw UnexpectedToken(";", tokens[cursor]);
+	indent--;
 	printRule("}");
 	indent--;
 }
 
-void Parser::parse_expression(const string& type) {
+void Parser::parse_expression(const string& type = "") {
 	printRule("expression {");
 	parse_term(type);
 	parse_subterm(type);
@@ -215,7 +219,7 @@ void Parser::parse_parameters() {
 void Parser::parse_parameter() {
 	printRule("parameter {");
 	indent++;
-	parse_expression("");
+	parse_expression();
 	indent--;
 	printRule("}");
 }
