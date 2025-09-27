@@ -47,8 +47,8 @@ As outlined in [`exceptions.txt`](./exceptions.txt):
 ```
 ├── Grammer.txt      # Grammar definition for the language
 ├── exceptions.txt   # Notes on known exceptions/limitations
-├── Tokenizer.h/.cpp # Lexer implementation
-├── Parser.h/.cpp    # Parser implementation
+├── Tokenizer.h      # Lexer implementation
+├── Parser.h         # Parser implementation
 ├── main.cpp         # Entry point
 └── ...              # Other helper classes
 ```
@@ -101,7 +101,3 @@ Parsing successful.
 - The focus is on understanding compiler design concepts: lexical analysis, parsing, and error handling.
 
 ---
-
-## 👨‍💻 Author
-**Muhammad Talha Rafat**  
-[GitHub Profile](https://github.com/Muhammad-Talha-Rafat)
