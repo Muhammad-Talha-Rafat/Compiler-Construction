@@ -1,13 +1,32 @@
-// #include <iostream>
-// #include "header.h"
-// using namespace std;
+#include <iostream>
+#include "header.h"
+using namespace std;
 
 // #define GOAT "Ronaldo"
 // #define NUMBER 7
 
-// int number = 7;
+int sum(int a, int b) {
+    return 4;
+}
 
 int main() {
-	cout << ass << 7 + ass << true;
-	return 0;
+    int a;
+    int b;
+    cout << "Enter first number: ";
+    cin >> a;
+    cout << "Enter second number: ";
+    cin >> b;
+
+    cout << "You entered " << a << " and " << b << endl;
+    cout << "Sum = " << sum(a, b) << endl;
+    cout << "Difference = " << a - b << endl;
+    cout << "Product = " << a * b << endl;
+
+    if (b != 0) {
+        cout << "Quotient = " << a / b << endl;
+    } else {
+        cout << "Division not possible (denominator is zero)" << endl;
+    }
+
+    return 0;
 }

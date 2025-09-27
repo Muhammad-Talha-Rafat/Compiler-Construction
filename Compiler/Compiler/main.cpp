@@ -9,7 +9,7 @@ int main() {
     string file = "code.txt";
 
     vector<token> tokens = tokenize(file);
-    //for (auto& i : tokens) cout << i;
+    //for (auto& i : tokens) cout << i << endl;
 
     Parser parser(tokens);
     parser.parse();
