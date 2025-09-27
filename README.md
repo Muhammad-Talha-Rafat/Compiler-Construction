@@ -88,10 +88,144 @@ int main() {
     return 0;
 }
 ```
-
-**Output:**
+**Ouput (Tokens):**
 ```
-Parsing successful.
+<KEYWORD: #include>
+<LIBRARY: <iostream>>
+<KEYWORD: using>
+<KEYWORD: namespace>
+<IDENTIFIER: std>
+<SEMICOLON: ;>
+<KEYWORD: int>
+<KEYWORD: main>
+<lBRACE: (>
+<rBRACE: )>
+<lPARENTHESIS: {>
+<KEYWORD: int>
+<IDENTIFIER: num>
+<ASSIGN: =>
+<INTEGER: 7>
+<SEMICOLON: ;>
+<KEYWORD: if>
+<lBRACE: (>
+<IDENTIFIER: num>
+<GREATERTHAN: >>
+<INTEGER: 5>
+<rBRACE: )>
+<lPARENTHESIS: {>
+<KEYWORD: cout>
+<LEFT_SHIFT: <<>
+<IDENTIFIER: num>
+<SEMICOLON: ;>
+<rPARENTHESIS: }>
+<KEYWORD: return>
+<INTEGER: 0>
+<SEMICOLON: ;>
+<rPARENTHESIS: }>
+```
+
+**Output (AST):**
+```
+program {
+   headers {
+      header {
+         KEYWORD: "#include",
+         LIBRARY: "<iostream>"
+      }
+      header {
+         KEYWORD: "using",
+         KEYWORD: "namespace",
+         IDENTIFIER: "std",
+         SEMICOLON: ";"
+      }
+   }
+   declarations {
+      declaration {
+         declare {
+            KEYWORD: "int",
+            KEYWORD: "main",
+            lBRACE: "(",
+            rBRACE: ")",
+            lPARENTHESIS: "{",
+            statements {
+               statement {
+                  declare {
+                     KEYWORD: "int",
+                     IDENTIFIER: "num",
+                     variable {
+                        ASSIGN: "=",
+                        expression {
+                           term {
+                              factor {
+                                 INTEGER: "7"
+                              }
+                           }
+                        }
+                        SEMICOLON: ";"
+                     }
+                  }
+               }
+               statement {
+                  if block {
+                     KEYWORD: "if",
+                     lBRACE: "(",
+                     conditions {
+                        condition {
+                           expression {
+                              term {
+                                 factor {
+                                    IDENTIFIER: "num"
+                                 }
+                              }
+                           }
+                           GREATERTHAN: ">",
+                           expression {
+                              term {
+                                 factor {
+                                    INTEGER: "5"
+                                 }
+                              }
+                           }
+                        }
+                     }
+                     rBRACE: ")",
+                     lPARENTHESIS: "{",
+                     statements {
+                        statement {
+                           output {
+                              KEYWORD: "cout",
+                              LEFT_SHIFT: "<<",
+                              expression {
+                                 term {
+                                    factor {
+                                       IDENTIFIER: "num"
+                                    }
+                                 }
+                              }
+                              SEMICOLON: ";"
+                           }
+                        }
+                     }
+                     rPARENTHESIS: "}"
+                  }
+               }
+            }
+            return {
+               KEYWORD: "return",
+               expression {
+                  term {
+                     factor {
+                        INTEGER: "0"
+                     }
+                  }
+               }
+               SEMICOLON: ";"
+            }
+            rPARENTHESIS: "}"
+         }
+      }
+   }
+}
 ```
 
 ---
