@@ -41,3 +41,5 @@ conditions can only support "IDENTIFIER" and "LITERALS" conditions
 	7 > num		allowed
 	num == 7	allowed
 	valid(...)	allowed
+
+NOT operation completely not supported
