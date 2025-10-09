@@ -17,8 +17,7 @@ void Parser::parse_statement() {
 	indent++;
 	if (currentToken().type == "IDENTIFIER") {
 		expect(currentToken().type);
-		set<string> assignment_op = { "+=", "-=", "*=", "/=", "%=", "=" };
-		if (assignment_op.count(currentToken().value)) { // assignment
+		if (assignment_op.count(currentToken().type)) { // assignment
 			printRule("assignment {");
 			indent++;
 			printToken(true);
@@ -71,15 +70,15 @@ void Parser::parse_statement() {
 		}
 		else {
 			printToken(true);
-			throw runtime_error("Syntax error: expected an operation");
+			throw runtime_error("Syntax error: expected a valid statement");
 		}
 	}
 	else if (currentToken().value == "const" || currentToken().value == "static" || types.count(currentToken().value)) {
 		indent--;
-		parse_declare();
+		parse_declare(); // declaration / initialization
 		indent++;
 	}
-	else if (currentToken().value == "++" || currentToken().value == "--") {
+	else if (currentToken().value == "++" || currentToken().value == "--") { // pre increment/decrement
 		if (currentToken().value == "++") printRule("increment {");
 		else printRule("decrement {");
 		indent++;
@@ -92,7 +91,7 @@ void Parser::parse_statement() {
 		indent--;
 		printRule("}");
 	}
-	else if (currentToken().value == "cout" || currentToken().value == "cin") {
+	else if (currentToken().value == "cout" || currentToken().value == "cin") { // I/O
 		if (currentToken().value == "cout") {
 			printRule("output {");
 			indent++;
@@ -108,7 +107,7 @@ void Parser::parse_statement() {
 			printRule("}");
 		}
 	}
-	else if (currentToken().value == "if") {
+	else if (currentToken().value == "if") { // if block
 		printRule("if block {");
 		indent++;
 		expect(currentToken().type);
@@ -180,7 +179,7 @@ void Parser::parse_statement() {
 		printToken(true);
 		throw runtime_error("Syntax error: expected an 'if' statement before this");
 	}
-	else if (currentToken().value == "for") {
+	else if (currentToken().value == "for") { // 
 		printRule("for loop {");
 		indent++;
 		expect(currentToken().type);
@@ -341,15 +340,14 @@ void Parser::parse_condition() {
 	printRule("condition {");
 	indent++;
 	parse_expression();
-	set<string> comparison_op = { "==", ">=", "<=", "!=", "<", ">" };
-	if (!comparison_op.count(currentToken().value))
+	if (!comparison_op.count(currentToken().type))
 		throw UnexpectedToken("COMPARISON op", currentToken());
 	expect(currentToken().type);
 	printToken(true);
 	parse_expression();
 	indent--;
 	printRule("}");
-	if (currentToken().type == "AND_LOGIC" || currentToken().type == "OR_LOGIC") {
+	if (logical_op.count(currentToken().type)) {
 		expect(currentToken().type);
 		printToken(true);
 		if (currentToken().type == "lBRACE") {

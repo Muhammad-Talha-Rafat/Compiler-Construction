@@ -16,6 +16,9 @@
     <Filter Include="Header Files\Regex">
       <UniqueIdentifier>{04cc9304-9c3e-42c1-98be-7870dcc1dcbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Regex\Parser">
+      <UniqueIdentifier>{72a9e2d1-eb58-4aca-8d9d-8c04abe18d73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -29,7 +32,9 @@
     <Text Include="Grammer.txt">
       <Filter>Header Files\Regex</Filter>
     </Text>
-    <Text Include="exceptions.txt" />
+    <Text Include="exceptions.txt">
+      <Filter>Header Files\Regex</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -42,19 +47,19 @@
       <Filter>Header Files\Regex</Filter>
     </ClInclude>
     <ClInclude Include="Parser.h">
-      <Filter>Header Files\Regex</Filter>
-    </ClInclude>
-    <ClInclude Include="ParseObject.h">
-      <Filter>Header Files\Regex</Filter>
+      <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
     <ClInclude Include="ParseDeclare.h">
-      <Filter>Header Files\Regex</Filter>
+      <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
     <ClInclude Include="ParseFunction.h">
-      <Filter>Header Files\Regex</Filter>
+      <Filter>Header Files\Regex\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseObject.h">
+      <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
     <ClInclude Include="ParseStatement.h">
-      <Filter>Header Files\Regex</Filter>
+      <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

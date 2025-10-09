@@ -74,6 +74,11 @@ private:
 
 	set<string> types = { "int", "float", "double", "char", "string", "bool" };
 	set<string> literals = { "INTEGER", "DECIMAL", "STRLITERAL", "CHARACTER", "true", "false" };
+	set<string> add_sub_op = { "ADDITION", "SUBTRACTION" };
+	set<string> mul_div_mod_op = { "MULTIPLICATION", "DIVISION", "MODULUS" };
+	set<string> comparison_op = { "GREATERTHAN", "SMALLERTHAN", "EQUALS", "NOTEQUAL", "GREATERorEQUAL", "SMALLERorEQUAL" };
+	set<string> logical_op = { "AND_LOGIC", "OR_LOGIC" };
+	set<string> assignment_op = { "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN", "DIV_ASSIGN", "MOD_ASSIGN", "ASSIGN" };
 
 
 	void printToken(bool comma = true) {
@@ -111,12 +116,14 @@ private:
 	}
 
 	void parse_headers() {
-		indent++;
-		printRule("headers {");
-		while (cursor < tokens.size() && (currentToken().value == "#include" || currentToken().value == "using"))
-			parse_header();
-		printRule("}");
-		indent--;
+		if (currentToken().value == "#include" || currentToken().value == "using") {
+			indent++;
+			printRule("headers {");
+			while (cursor < tokens.size() && (currentToken().value == "#include" || currentToken().value == "using"))
+				parse_header();
+			printRule("}");
+			indent--;
+		}
 	}
 
 	void parse_header() {
@@ -163,7 +170,7 @@ private:
 		printRule("declaration {");
 		while (cursor < tokens.size()) {
 			if (currentToken("declaration").value == "#define")	parse_define();
-			//else if (currentToken("class").value == "class" || currentToken("struct").value == "struct") parse_object();
+			else if (currentToken("class").value == "class" || currentToken("struct").value == "struct") parse_object();
 			else parse_declare();
 		}
 		if (main == false) throw runtime_error("Runtime error: program must contain a 'main' function");
@@ -200,9 +207,8 @@ private:
 	void parse_parameters();
 	void parse_parameter();
 
-	//void parse_object();
-	//void parse_objBody();
-	//void parse_objBlock();
+	void parse_object();
+	void parse_objBlock();
 
 	void parse_function(const string& type);
 	void parse_voidfunction();
@@ -214,10 +220,12 @@ private:
 	void parse_statement();
 	void parse_iostream(const string& stream);
 	void parse_ostring();
+	void parse_conditions();
 	void parse_condition();
+	//void parse_simpleCondition();
+
 
 	void parse_return(const string& type);
-
 
 public:
 
@@ -236,6 +244,7 @@ public:
 	}
 };
 
+#include "ParseObject.h"
 #include "ParseDeclare.h"
 #include "ParseFunction.h"
 #include "ParseStatement.h"
