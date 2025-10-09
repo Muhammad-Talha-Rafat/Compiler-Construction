@@ -83,7 +83,7 @@ void Parser::parse_term(const string& type) {
 }
 
 void Parser::parse_subterm(const string& type) {
-	if (currentToken().type == "ADDITION" || currentToken().type == "SUBTRACTION") {
+	if (add_sub_op.count(currentToken().type)) {
 		indent++;
 		printRule("subterm {");
 		indent++;
@@ -173,7 +173,7 @@ void Parser::parse_factor(const string& type) {
 }
 
 void Parser::parse_subfactor(const string& type) {
-	if (currentToken().type == "MULTIPLICATION" || currentToken().type == "DIVISION" || currentToken().type == "MODULUS") {
+	if (mul_div_mod_op.count(currentToken().type)) {
 		indent++;
 		printRule("subfactor {");
 		indent++;
