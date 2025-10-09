@@ -92,7 +92,8 @@ parameters		→ parameter (<,> parameters | ε)
 parameter		→ expression | funcion_call
 
 conditions		→ condition (logical_op conditions | ε)
-condition		→ expression compare_op expression | <(> conditions <)>
+condition		→ simple_condition | <(> conditions <)>
+simpe_condition	→ expression compare_op expression
 
 update			→ increment |  decrement | <IDENTIFIER> assign_op expression
 
