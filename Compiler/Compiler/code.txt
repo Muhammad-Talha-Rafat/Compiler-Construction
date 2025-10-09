@@ -1,31 +1,54 @@
 #include <iostream>
-#include "header.h"
 using namespace std;
 
-// #define GOAT "Ronaldo"
-// #define NUMBER 7
+// Normal function with return type
+int sum(int x, int y) {
+    return (x + y) * (x - y % 2);
+}
 
-int sum(int a, int b) {
-    return 4;
+// Void function (no return)
+void printStatus(int a, int b, int c) {
+    if (a > b && c != 0 || (a <= 20 || (b == 5 && c < 100))) {
+        cout << "Status OK" << endl;
+    } else {
+        cout << "Status NOT OK" << endl;
+    }
 }
 
 int main() {
-    int a;
-    int b;
-    cout << "Enter first number: ";
-    cin >> a;
-    cout << "Enter second number: ";
-    cin >> b;
+    int a = 10;
+    int b = 5;
+    int c = 0;
 
-    cout << "You entered " << a << " and " << b << endl;
-    cout << "Sum = " << sum(a, b) << endl;
-    cout << "Difference = " << a - b << endl;
-    cout << "Product = " << a * b << endl;
+    // Call to normal function
+    c = sum(a, b);
 
-    if (b != 0) {
-        cout << "Quotient = " << a / b << endl;
+    // Call to void function
+    printStatus(a, b, c);
+
+    // While loop with decrement
+    while (a > 0 && (b != 0 || c != 0)) {
+        a--;
+        b = b - 1;
+        c = c + a * b;
+    }
+
+    // For loop with nested if
+    for (int i = 0; i < 5; i++) {
+        if (i % 2 == 0 && (a + b > c || (c == 0 && b != 3))) {
+            cout << "Even iteration: " << i << endl;
+        } else {
+            cout << "Odd iteration: " << i << endl;
+        }
+    }
+
+    // Do-while in else form
+    if (c > 0) {
+        cout << "C positive" << endl;
     } else {
-        cout << "Division not possible (denominator is zero)" << endl;
+        do {
+            c++;
+        } while (c < 10);
     }
 
     return 0;

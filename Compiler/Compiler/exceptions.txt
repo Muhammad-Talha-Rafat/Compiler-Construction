@@ -42,4 +42,4 @@ conditions can only support "IDENTIFIER" and "LITERALS" conditions
 	num == 7	allowed
 	valid(...)	allowed
 
-NOT operator completely isn't supported
+NOT operation completely not supported

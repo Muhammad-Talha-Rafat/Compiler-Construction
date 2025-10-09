@@ -97,60 +97,26 @@ void Parser::parse_argument() {
 	if (currentToken().value == "const" || currentToken().value == "static") {
 		expect(currentToken().type);
 		printToken(true);
-		if (!types.count(currentToken().value)) throw ExpectedTypeToken();
 	}
-	if (types.count(currentToken().value)) {
-		expect(currentToken().type);
-		printToken(true);
-		expect("IDENTIFIER");
-		printToken(false);
-	}
-	else throw ExpectedTypeToken();
+	if (!types.count(currentToken().value)) throw ExpectedTypeToken();
+	expect(currentToken().type);
+	printToken(true);
+	expect("IDENTIFIER");
+	printToken(false);
 	indent--;
 	printRule("}");
 	indent--;
 }
 
 void Parser::parse_return(const string& type) {
-	//printRule("return {");
-	//indent++;
-	//expect(currentToken().type);
-	//printToken(true);
-	//if (currentToken().type == "IDENTIFIER") parse_expression(type);
-	//else if (currentToken().type != type) {
-	//	if (type == "bool" && currentToken().value != "true" && currentToken().value != "false")
-	//		throw ExpectedBooleanValue(currentToken().type);
-	//	else if (type == "int" && currentToken().type != "INTEGER")
-	//		throw ExpectedIntLit(currentToken().type);
-	//	else if ((type == "float" || type == "double") && currentToken().type != "DECIMAL")
-	//		throw ExpectedFloatLit(currentToken().type);
-	//	else if (type == "char" && currentToken().type != "CHARACTER")
-	//		throw ExpectedCharacterLit(currentToken().type);
-	//	else if (type == "string" && currentToken().type != "STRLITERAL")
-	//		throw ExpectedStringLit(currentToken().type);
-	//}
-	//expect(currentToken().type);
-	//printToken(true);
-	//expect("SEMICOLON");
-	//printToken(false);
-	//indent--;
-	//printRule("}");
-
 	printRule("return {");
 	indent++;
-
 	expect("KEYWORD", "return");
 	printToken(true);
-
-	// If there is an expression before the semicolon, parse it
-	if (currentToken().type != "SEMICOLON") {
-		parse_expression(type);  // handles identifiers, literals, +, -, etc.
-	}
-
+	if (currentToken().type != "SEMICOLON")
+		parse_expression(type);
 	expect("SEMICOLON");
 	printToken(false);
-
 	indent--;
 	printRule("}");
-
 }
