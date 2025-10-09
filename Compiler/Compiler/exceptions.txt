@@ -29,8 +29,8 @@ default assignments are not supported
 	int add(int a = 9, int b = 11)
 
 each block requires parenthseis encapsulation even if its only one line
-	if (num > 7) do ts		disallowed
-	if (num > 7) { do ts }	not allowed
+	if (num > 7) num++;		disallowed
+	if (num > 7) { num++; }	allowed
 
 return statements can only parse literal type values, not expressions
 or identifiers
