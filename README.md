@@ -68,7 +68,7 @@ g++ -std=c++17 -o compiler main.cpp Parser.cpp Tokenizer.cpp
 
 ### Run
 ```bash
-./compiler input_code.txt
+./compiler code.txt
 ```
 
 ---
