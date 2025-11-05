@@ -2,6 +2,7 @@
 #include <vector>
 #include "Tokenizer.h"
 #include "Parser.h"
+#include "ScopeAnalyzer.h"
 using namespace std;
 
 
@@ -13,6 +14,9 @@ int main() {
 
     Parser parser(tokens);
     parser.parse();
+
+    ScopeAnalyzer analyzer;
+    analyzer.analyse();
 
     return 0;
 }

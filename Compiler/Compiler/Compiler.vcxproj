@@ -137,6 +137,7 @@
     <ClInclude Include="ParseObject.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ParseStatement.h" />
+    <ClInclude Include="ScopeAnalyzer.h" />
     <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

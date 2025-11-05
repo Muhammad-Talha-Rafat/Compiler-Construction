@@ -19,6 +19,9 @@
     <Filter Include="Header Files\Regex\Parser">
       <UniqueIdentifier>{72a9e2d1-eb58-4aca-8d9d-8c04abe18d73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Regex\Scope Analysis">
+      <UniqueIdentifier>{7c14be4b-ec77-4a36-bf50-40b9613d0ad7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,6 +63,9 @@
     </ClInclude>
     <ClInclude Include="ParseStatement.h">
       <Filter>Header Files\Regex\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopeAnalyzer.h">
+      <Filter>Header Files\Regex\Scope Analysis</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
