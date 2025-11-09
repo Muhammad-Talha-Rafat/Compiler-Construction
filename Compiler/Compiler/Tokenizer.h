@@ -109,10 +109,10 @@ vector<rule> Rules = {
     {"COMMA", regex("^,")},
     {"DOT", regex("^\\.")},
 
-    {"lBRACE", regex("^\\(")},
-    {"rBRACE", regex("^\\)")},
-    {"lPARENTHESIS", regex("^\\{")},
-    {"rPARENTHESIS", regex("^\\}")},
+    {"lPARENTHESIS", regex("^\\(")},
+    {"rPARENTHESIS", regex("^\\)")},
+    {"lBRACE", regex("^\\{")},
+    {"rBRACE", regex("^\\}")},
     {"lBRACKET", regex("^\\[")},
     {"rBRACKET", regex("^\\]")}
 };

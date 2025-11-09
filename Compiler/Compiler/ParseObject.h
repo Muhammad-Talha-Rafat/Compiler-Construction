@@ -2,123 +2,57 @@
 using namespace std;
 
 
-void Parser::parse_object() {
-	indent++;
-	printRule(currentToken().value == "class" ? "class {" : "struct {");
-	indent++;
-	expect("KEYWORD"); // class / struct
-	printToken(true);
-	expect("IDENTIFIER");
-	printToken(true);
-	expect("lPARENTHESIS");
-	printToken(true);
-	parse_objBlock();
-	expect("rPARENTHESIS");
-	printToken(true);
-	expect("SEMICOLON");
-	printToken(true);
-	indent--;
-	printRule("}");
-	indent--;
-}
 
+Node* Parser::parse_object() {
 
-void Parser::parse_objBlock() {
-	while (currentToken().value == "private" || currentToken().value == "public" || currentToken().value == "protected") {
-		printRule("block {");
-		indent++;
-		printRule("access {");
-		indent++;
-		expect(currentToken().type);
-		printToken(true);
-		expect("COLON");
-		printToken(false);
-		indent--;
-		printRule("}");
-		printRule("members {");
-		while (types.count(currentToken().value) || currentToken().value == "const" || currentToken().value == "static" || currentToken().value == "void")
-			parse_declare();
-		printRule("}");
-		indent--;
-		printRule("}");
+	Node* object = new Node(peek().value == "class" ? "class" : "struct");
+
+	try {
+		object->children.push_back(new Node(consume())); // class / struct
+		object->children.push_back(new Node(expectType("IDENTIFIER")));
+		object->children.push_back(new Node(expectType("lBRACE")));
+
+		Node* objBlock_node = parse_objBlock();
+		if (objBlock_node)
+			object->children.push_back(objBlock_node);
+
+		object->children.push_back(new Node(expectType("rBRACE")));
+		object->children.push_back(new Node(expectType("SEMICOLON")));
 	}
-	if (currentToken().value != "private" && currentToken().value != "public" && currentToken().value != "protected" && tokens[cursor - 1].value == "{")
-		throw runtime_error("Syntax error: 'access' keyword expected");
+	catch (const runtime_error& e) {
+		return new Node("error", e.what());
+	}
+
+	return object;
 }
 
 
 
+Node* Parser::parse_objBlock() {
 
-/*
+	Node* objBlock = new Node("objBlock");
 
-class {
-	KEYWORD: class,
-	IDENTIFIER: fraction,
-	lPARENTHESIS: {,
-	block {
-		access {
-			KEYWORD: private,
-			COLON: :
-		}
-		members {
-			member {
-				KEYWORD: int,
-				IDENTIFIER: numerator,
-				SEMICOLON: ;
-			}
-			member {
-				KEYWORD: int,
-				IDENTIFIER: denominator,
-				SEMICOLON: ;
+	try {
+
+		while (peek().value == "private" || peek().value == "public" || peek().value == "protected") {
+
+			objBlock->children.push_back(new Node(consume())); // access keyword
+			objBlock->children.push_back(new Node(expectType("COLON")));
+
+			while (types.count(currentToken().value) || currentToken().value == "const" || currentToken().value == "static" || currentToken().value = "void") {
+				Node* declare_node = parse_declare();
+				if (declare_node)
+					objBlock->children.push_back(declare_node);
 			}
 		}
+
+		if (currentToken().value != "private" && currentToken().value != "public" && currentToken().value != "protected" && tokens[cursor - 1].value == "{")
+			throw runtime_error("Syntax error: 'access' keyword expected");
 	}
-	block {
-		access {
-			KEYWORD: public,
-			COLON: :
-		}
-		members {
-			member {
-				KEYWORD: void,
-				IDENTIFIER: print,
-				lBRACE: (,
-				rBRACE: ),
-				lPARENTHESIS: {,
-				statements {
-					statement {
-						output {
-							KEYWORD: cout,
-							LEFTSHIFT: <<,
-							expression {
-								term {
-									factor {
-										IDENTIFIER: numerator
-									}
-								}
-							}
-							LEFTSHIFT: <<,
-							CHARACTER: "/",
-							LEFTSHIFT: <<,
-							expression {
-								term {
-									factor {
-										IDENTIFIER: denominator
-									}
-								}
-							}
-							LEFTSHIFT: <<,
-							KEYWORD: endl,
-							SEMICOLON: ;
-						}
-					}
-				}
-				rPARENTHESIS: },
-			}
-		}
+	catch (const runtime_error& e) {
+		return new Node("error", e.what());
 	}
-	rPARENTHESIS: },
-	SEMICOLON: ;,
+
+	return objBlock;
 }
 
-*/

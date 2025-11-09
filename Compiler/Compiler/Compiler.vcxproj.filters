@@ -52,7 +52,7 @@
     <ClInclude Include="Parser.h">
       <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="ParseDeclare.h">
+    <ClInclude Include="ParseDeclaration.h">
       <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
     <ClInclude Include="ParseFunction.h">
@@ -66,6 +66,12 @@
     </ClInclude>
     <ClInclude Include="ScopeAnalyzer.h">
       <Filter>Header Files\Regex\Scope Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AST.h">
+      <Filter>Header Files\Regex</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseHeader.h">
+      <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

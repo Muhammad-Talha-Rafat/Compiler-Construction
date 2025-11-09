@@ -8,9 +8,8 @@ using namespace std;
 
 
 
-runtime_error UnexpectedEOF(const string& expected) {
-	if (expected == "value" || expected == "type" || expected == "declaration") return runtime_error("UnexpectedEOF: expected a " + expected);
-	else return runtime_error("UnexpectedEOF: expected \"" + expected + "\"");
+runtime_error UnexpectedEOF() {
+	return runtime_error("UnexpectedEOF: end of code was not expected");
 }
 
 runtime_error UnexpectedToken(const string& expected, const token& encountered) {
@@ -21,11 +20,11 @@ runtime_error UnexpectedToken(const string& expected, const token& encountered) 
 		string undefined = encountered.value == "\"" ? "\\\"" : encountered.value;
 		return runtime_error("UnexpectedToken: expected a " + value + ", got \"" + undefined + "\"");
 	}
-	return runtime_error("UnexpectedToken: expected a " + value + ", got \"" + encountered.type + "\"");
+	return runtime_error("UnexpectedToken: expected " + value + ", got \"" + encountered.type + "\"");
 }
 
 runtime_error ExpectedIdentifier(const string& encountered) {
-	return runtime_error("ExpectedIdentifier: \"" + encountered + "\" identified");
+	return runtime_error("ExpectedIdentifier: expected an <IDENTIFIER> but \"" + encountered + "\" identified");
 }
 
 runtime_error UndefinedToken(const string& encountered) {
@@ -37,30 +36,33 @@ runtime_error ExpectedTypeToken() {
 	return runtime_error("ExpectedTypeToken: unable to find data type");
 }
 
-runtime_error ExpectedIntLit(const string& encountered) {
-	return runtime_error("ExpectedIntLit: expected an integer, got " + encountered);
+runtime_error ExpectedIntLit(const string& type) {
+	return runtime_error("ExpectedIntLit: expected an integer value for type <" + type + ">");
 }
 
-runtime_error ExpectedFloatLit(const string& encountered) {
-	return runtime_error("ExpectedFloatLit: expected a float value, got " + encountered);
+runtime_error ExpectedFloatLit(const string& type) {
+	return runtime_error("ExpectedFloatLit: expected a float value for type <" + type + ">");
 }
 
-runtime_error ExpectedStringLit(const string& encountered) {
-	return runtime_error("ExpectedStringLit: expected a string literal, got " + encountered);
+runtime_error ExpectedStringLit(const string& type) {
+	return runtime_error("ExpectedStringLit: expected a string literal for type <" + type + ">");
 }
 
-runtime_error ExpectedCharacterLit(const string& encountered) {
-	return runtime_error("ExpectedCharacterLit: expected a character, got " + encountered);
+runtime_error ExpectedCharacterLit(const string& type) {
+	return runtime_error("ExpectedCharacterLit: expected a character for type <" + type + ">");
 }
 
-runtime_error ExpectedBooleanValue(const string& encountered) {
-	return runtime_error("ExpectedBooleanValue: expected a Boolean expression, got " + encountered);
+runtime_error ExpectedBooleanValue(const string& type) {
+	return runtime_error("ExpectedBooleanValue: expected a bool value for type <" + type + ">");
 }
 
 runtime_error ExpectedExpression(const string& expected) {
 	return runtime_error("ExpectedExpression: expected an assignment (" + expected + ")");
 }
 
+runtime_error SyntaxError(const string& message) {
+	return runtime_error(message);
+}
 
 
 class Parser
@@ -69,8 +71,32 @@ private:
 
 	vector<token> tokens;
 	size_t cursor;
-	int indent = 0;
 	bool main = false;
+
+	token peek(int offset = 0) const {
+		if (cursor + offset < tokens.size())
+			return tokens[cursor + offset];
+		else throw UnexpectedEOF();
+	}
+
+	token consume() {
+		if (cursor < tokens.size())
+			return tokens[cursor++];
+		else throw UnexpectedEOF();
+	}
+
+	token expectType(const string& expected) {
+		if (peek().type == expected)
+			return consume();
+		else throw UnexpectedToken(expected, peek());
+	}
+
+	token expectValue(const string& expected) {
+		if (peek().value == expected)
+			return consume();
+		else throw UnexpectedToken(expected, peek());
+	}
+
 
 	set<string> types = { "int", "float", "double", "char", "string", "bool" };
 	set<string> literals = { "INTEGER", "DECIMAL", "STRLITERAL", "CHARACTER", "true", "false" };
@@ -81,170 +107,81 @@ private:
 	set<string> assignment_op = { "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN", "DIV_ASSIGN", "MOD_ASSIGN", "ASSIGN" };
 
 
-	void printToken(bool comma = true) {
-		for (int i = 0; i < indent; i++) cout << "   ";
-		cout << tokens[cursor - 1].type << ": "
-			<< ((tokens[cursor - 1].type == "STRLITERAL" || tokens[cursor - 1].type == "HEADER" || tokens[cursor - 1].type == "CHARACTER") ? "" : "\"")
-			<< tokens[cursor - 1].value
-			<< ((tokens[cursor - 1].type == "STRLITERAL" || tokens[cursor - 1].type == "HEADER" || tokens[cursor - 1].type == "CHARACTER") ? "" : "\"")
-			<< (comma ? "," : "") << endl;
-	}
+	Node* parse_headers();
+	Node* parse_header();
 
-	void printRule(const string& message) const {
-		for (int i = 0; i < indent; i++) cout << "   ";
-		cout << message << endl;
-	}
+	Node* parse_declarations();
 
-	token& currentToken(const string& expected = "") {
-		if (cursor >= tokens.size())
-			throw UnexpectedEOF(expected);
-		return tokens[cursor];
-	}
+	Node* parse_define();
 
-	void expect(const string& type, const string& value = "") {
-		if (cursor >= tokens.size())
-			throw UnexpectedEOF(type);
-		if (tokens[cursor].type == "UNDEFINED") throw UndefinedToken(tokens[cursor].value);
-		else if (currentToken().type != type) {
-			if (type == "IDENTIFIER") throw ExpectedIdentifier(currentToken().type);
-			throw UnexpectedToken(type, currentToken());
-		}
-		else if (!value.empty() && currentToken().value != value) { // type is expected, but not the value
-			throw UnexpectedToken(value, currentToken());
-		}
-		cursor++;
-	}
+	Node* parse_variable();
 
-	void parse_headers() {
-		if (currentToken().value == "#include" || currentToken().value == "using") {
-			indent++;
-			printRule("headers {");
-			while (cursor < tokens.size() && (currentToken().value == "#include" || currentToken().value == "using"))
-				parse_header();
-			printRule("}");
-			indent--;
-		}
-	}
+	//Node* parse_declare();
+	Node* parse_expression(const string& type);
+	Node* parse_term(const string& type);
+	//Node* parse_subterm(const string& type);
+	Node* parse_factor(const string& type);
+	//Node* parse_subfactor(const string& type);
 
-	void parse_header() {
-		indent++;
-		printRule("header {");
-		if (currentToken().value == "#include") {
-			indent++;
-			expect("KEYWORD", "#include");
-			printToken(true);
-			if (currentToken("LIBRARY").type == "LIBRARY" || currentToken("HEADER").type == "HEADER") {
-				expect(currentToken().type);
-				printToken(false);
-			}
-			else if (tokens[cursor].type == "UNDEFINED") expect("UNDEFINED");
-			else throw UnexpectedToken("LIBRARY\" or \"HEADER", tokens[cursor]);
-			indent--;
-		}
-		else if (currentToken().value == "using") {
-			indent++;
-			expect("KEYWORD", "using");
-			printToken(true);
-			expect("KEYWORD", "namespace");
-			printToken(true);
-			expect("IDENTIFIER");
-			printToken(true);
-			expect("SEMICOLON");
-			printToken(false);
-			indent--;
-		}
-		printRule("}");
-		indent--;
-	}
+	//Node* parse_functionCall();
+	//Node* parse_parameters();
+	//Node* parse_parameter();
 
-	void parse_declarations() {
-		indent++;
-		printRule("declarations {");
-		parse_declaration();
-		printRule("}");
-		indent--;
-	}
-
-	void parse_declaration() {
-		indent++;
-		printRule("declaration {");
-		while (cursor < tokens.size()) {
-			if (currentToken("declaration").value == "#define")	parse_define();
-			else if (currentToken("class").value == "class" || currentToken("struct").value == "struct") parse_object();
-			else parse_declare();
-		}
-		if (main == false) throw runtime_error("Runtime error: program must contain a 'main' function");
-		printRule("}");
-		indent--;
-	}
-
-	void parse_define() {
-		indent++;
-		printRule("define {");
-		indent++;
-		expect("KEYWORD", "#define");
-		printToken(true);
-		expect("IDENTIFIER");
-		printToken(true);
-		if (literals.count(currentToken("value").type) || literals.count(currentToken().value)) {
-			expect(currentToken().type);
-			printToken(false);
-			indent--;
-		}
-		else throw UnexpectedToken("value", currentToken());
-		printRule("}");
-		indent--;
-	}
-
-	void parse_declare();
-	void parse_expression(const string& type);
-	void parse_term(const string& type);
-	void parse_subterm(const string& type);
-	void parse_factor(const string& type);
-	void parse_subfactor(const string& type);
-
-	void parse_functionCall();
-	void parse_parameters();
-	void parse_parameter();
-
-	void parse_object();
-	void parse_objBlock();
-
-	void parse_function(const string& type);
-	void parse_voidfunction();
-	void parse_mainfunction();
-	void parse_arguments();
-	void parse_argument();
-
-	void parse_statements();
-	void parse_statement();
-	void parse_iostream(const string& stream);
-	void parse_ostring();
-	void parse_conditions();
-	void parse_condition();
-	//void parse_simpleCondition();
+	Node* parse_object();
+	Node* parse_objBlock();
 
 
-	void parse_return(const string& type);
+	//Node* parse_function(const string& type);
+	//Node* parse_voidfunction();
+	//Node* parse_mainfunction();
+	//Node* parse_arguments();
+	//Node* parse_argument();
+
+	//Node* parse_statements();
+	//Node* parse_statement();
+	//Node* parse_iostream(const string& stream);
+	//Node* parse_ostring();
+
+	//Node* parse_conditions();
+	//Node* parse_condition();
+	//Node* parse_comparison();
+
+	//Node* parse_return(const string& type);
 
 public:
 
-	Parser(const vector<token>& stream) : tokens(stream), cursor(0) {}
+	Parser(const vector<token>& stream)
+		: tokens(stream), cursor(0) {}
 
-	void parse() {
-		printRule("program {");
-		try {
-			parse_headers();
-			parse_declarations();
-			printRule("}");
-		}
-		catch (const runtime_error& e) {
-			printRule(e.what());
-		}
-	}
+	Node* parse();
 };
 
-#include "ParseObject.h"
-#include "ParseDeclare.h"
-#include "ParseFunction.h"
-#include "ParseStatement.h"
+
+
+#include "AST.h"
+#include "ParseHeader.h"
+#include "ParseDeclaration.h"
+//#include "ParseObject.h"
+//#include "ParseFunction.h"
+//#include "ParseStatement.h"
+
+
+Node* Parser::parse() {
+
+	Node* root = new Node("program");
+
+	try {
+		Node* headers_node = parse_headers();
+		if (headers_node)
+			root->children.push_back(headers_node);
+
+		Node* declarations_node = parse_declarations();
+		if (declarations_node)
+			root->children.push_back(declarations_node);
+	}
+	catch (const runtime_error& e) {
+		root->children.push_back(new Node("error", e.what()));
+	}
+
+	return root;
+}
