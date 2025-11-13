@@ -3,171 +3,103 @@ using namespace std;
 
 
 
-Node* Parser::parse_function(const string& type) {
+Node* Parser::parse_function(const string& type, const string& name) {
 
-	Node* function_node = new Node("function");
+	Node* _function = new Node("function");
+	bool return_trigger = false;
 
-	function_node->children.push_back(new Node(expect("lBRACE")));
+	try {
 
-	if (currentToken().type != "rBRACE") { // means, there ARE arguments
-		Node* arguments_node = parse_arguments();
-		if (arguments_node)
-			function_node->children.push_back(arguments_node);
+		if (peek().value == "const" || peek().value == "static") {
+			if (type == "void")
+				throw SyntaxError("\"void\" function can't be '" + peek().value + "'");
+
+			if (type == "main")
+				throw SyntaxError("\"main\" function can't be '" + peek().value + "'");
+
+			_function->children.push_back(new Node(consume()));
+		}
+
+		_function->children.push_back(new Node(consume()));		// type
+		_function->children.push_back(new Node(consume()));		// IDENTIFIER
+
+		_function->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+		// validate parameters
+
+		while (peek().type != "rPARENTHESIS") {
+
+			Node* parameter_node = parse_parameters();
+
+			if (parameter_node)
+				_function->children.push_back(parameter_node);
+
+			if (peek().type == "COMMA")
+				_function->children.push_back(new Node(consume()));
+		}
+
+		_function->children.push_back(new Node(expectType("rPARENTHESIS")));
+		_function->children.push_back(new Node(expectType("lBRACE")));
+
+		// now comes the body
+
+		Node* _block = new Node("block");
+
+		while (peek().type != "rBRACE") {
+
+			Node* statements_node = parse_statements();
+
+			if (statements_node && !statements_node->children.empty() && statements_node->children.back()->type == "error") {
+				_block->children.push_back(statements_node);
+				_function->children.push_back(_block);
+				return _function;
+			}
+
+			if (statements_node)
+				_block->children.push_back(statements_node);
+
+			if (cursor < tokens.size() && peek().value == "return") {
+				if (type == "void")
+					throw SyntaxError("\"void\" function can not return");
+
+				Node* return_node = parse_return();
+				if (return_node)
+					_block->children.push_back(return_node);
+
+				return_trigger = true;
+			}
+		}
+
+		_function->children.push_back(_block);
+
+		if (name != "main" && type != "void" && !return_trigger)
+			throw SyntaxError("Missing \"return\" statement in non-void function");
+
+		_function->children.push_back(new Node(expectType("rBRACE")));
+	}
+	catch (const runtime_error& e) {
+		_function->children.push_back(new Node("error", e.what()));
 	}
 
-	function_node->children.push_back(new Node(expect("rBRACE")));
-	function_node->children.push_back(new Node(expect("lPARENTHESIS")));
-
-	if (currentToken().type != "rPARENTHESIS") {
-		Node* statements_node = parse_statements();
-		if (statements_node)
-			function_node->children.push_back(statements_node);
-	}
-
-	if (currentToken().value != "return")
-		throw runtime_error("Runtime error: expected a 'return' statement");
-	
-	Node* return_node = parse_return(type);
-	if (return_node)
-		function_node->children.push_back(return_node);
-
-	function_node->children.push_back(new Node(expect("rPARENTHESIS")));
-
-	return function_node;
+	return _function;
 }
 
 
 
-Node* Parser::parse_voidfunction() {
+Node* Parser::parse_parameters() {
 
-	Node* voidfunction_node = new Node("void");
+	Node* _parameter = new Node("parameter");
 
-	voidfunction_node->children.push_back(new Node(expect("KEYWORD", "void")));
-
-	if (tokens[cursor].value == "main") {
-		voidfunction_node->children.push_back(new Node(expect(currentToken().type)));
-		throw runtime_error("Runtime error: 'main' can only have return type 'int'");
-	}
-
-	voidfunction_node->children.push_back(new Node(expect("IDENTIFIER")));
-	voidfunction_node->children.push_back(new Node(expect("lBRACE")));
-
-	if (currentToken().type != "rBRACE") {
-		Node* arguments_node = parse_arguments();
-		if (arguments_node)
-			voidfunction_node->children.push_back(arguments_node);
-	}
-
-	voidfunction_node->children.push_back(new Node(expect("rBRACE")));
-	voidfunction_node->children.push_back(new Node(expect("lPARENTHESIS")));
-
-	if (currentToken().type != "rPARENTHESIS") {
-		Node* statements_node = parse_statements();
-		if (statements_node)
-			voidfunction_node->children.push_back(statements_node);
-	}
-
-	if (currentToken().value == "return") {
-		voidfunction_node->children.push_back(new Node(expect(currentToken().type)));
-
-		if (currentToken().type != "SEMICOLON")
-			throw runtime_error("Runtime error: 'void' functions do not return anything");
-
-		voidfunction_node->children.push_back(new Node(expect("SEMICOLON")));
-	}
-
-	voidfunction_node->children.push_back(new Node(expect("rPARENTHESIS")));
-
-	return voidfunction_node;
-}
-
-Node* Parser::parse_mainfunction() {
-
-	Node* mainfunction_node = new Node("main");
-
-	mainfunction_node->children.push_back(new Node(expect(currentToken().type, "main")));
-
-	if (tokens[cursor - 2].value != "int")
-		throw runtime_error("Runtime error: 'main' can only have return type 'int'");
-	
-	mainfunction_node->children.push_back(new Node(expect("lBRACE")));
-
-	if (currentToken().type != "rBRACE")
-		throw runtime_error("Syntax error: 'main' could not contain arguments");
-	
-	mainfunction_node->children.push_back(new Node(expect("rBRACE")));
-	mainfunction_node->children.push_back(new Node(expect("lPARENTHESIS")));
-
-	Node* statements_node = parse_statements();
-	if (statements_node);
-		mainfunction_node->children.push_back(statements_node);
-	
-	if (currentToken() == token{ "KEYWORD", "return" }) {
-		Node* return_node = parse_return("int");
-		if (return_node)
-			mainfunction_node->children.push_back(return_node);
-	}
-	
-	mainfunction_node->children.push_back(new Node(expect("rPARENTHESIS")));
-
-	return mainfunction_node;
-}
-
-
-
-Node* Parser::parse_arguments() {
-
-	Node* arguments_node = new Node("arguments");
-
-	Node* argument_node = parse_argument();
-	if (argument_node)
-		arguments_node->children.push_back(argument_node);
-
-	while (currentToken().type == "COMMA") {
-
-		arguments_node->children.push_back(new Node(expect(currentToken().type)));
-
-		argument_node = parse_argument();
-		if (argument_node)
-			arguments_node->children.push_back(argument_node);
-	}
-
-	return arguments_node;
-}
-
-
-
-Node* Parser::parse_argument() {
-
-	Node* argument_node = new Node("argument");
-
-	if (currentToken().value == "const" || currentToken().value == "static")
-		argument_node->children.push_back(new Node(expect(currentToken().type)));
-
-	if (!types.count(currentToken().value))
+	if (types.count(peek().value) == 0)
 		throw ExpectedTypeToken();
 
-	argument_node->children.push_back(new Node(expect(currentToken().type)));
-	argument_node->children.push_back(new Node(expect("IDENTIFIER")));
+	_parameter->children.push_back(new Node(consume())); // type
+	_parameter->children.push_back(new Node(expectType("IDENTIFIER")));
 
-	return argument_node;
+	return _parameter;
 }
 
 
 
-Node* Parser::parse_return(const string& type) {
 
-	Node* return_node = new Node("return");
 
-	return_node->children.push_back(new Node(expect("KEYWORD", "return")));
-
-	if (currentToken().type != "SEMICOLON") {
-		Node* expression_node = parse_expression(type);
-		if (expression_node)
-			return_node->children.push_back(expression_node);
-	}
-
-	return_node->children.push_back(new Node(expect("SEMICOLON")));
-
-	return return_node;
-}

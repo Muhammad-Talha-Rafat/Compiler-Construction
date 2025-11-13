@@ -31,69 +31,70 @@ add_sub			→ <ADD> | <SUBTRACT>
 mul_div_mod		→ <MULTIPLY> | <DIVIDE> | <MOD>
 
 
-program			→ headers declarations
+	program			→ headers declarations
 
-headers			→ header headers | header
-header			→ <#include> (<LIBRARY> | <HEADER>) | <using> <namespace> <IDENTIFIER> <;>
+	headers			→ header headers | header
+	header			→ <#include> (<LIBRARY> | <HEADER>) | <using> <namespace> <IDENTIFIER> <;>
 
-declarations	→ declaration declarations | ε
-declaration		→ define | object | variable | function | void | main
+	declarations	→ declaration declarations | ε
+	declaration		→ define | object | variable | function | void | main
 
-define			→ <#define> <IDENTIFIER> literal
+	define			→ <#define> <IDENTIFIER> literal
 
-object			→ (<class> | <struct>) <IDENTIFIER> <{> objBody <}> <;>
-objBody			→ objBlock objBody | ε
-objBlock		→ access <:> members
-access			→ <private> | <public> | <protected>
-members			→ member members | ε
-member			→ variable | function
+	object			→ (<class> | <struct>) <IDENTIFIER> <{> objBody <}> <;>
+	objBody			→ objBlock objBody | ε
+	objBlock		→ access <:> members
+	access			→ <private> | <public> | <protected>
+	members			→ member members | ε
+	member			→ variable | function
 
-variable		→ (<const> | <static> | ε) type <IDENTIFIER> ((<ASSIGN> expression | ε) | multi_var) <;>
-multi_var		→ <,> <IDENTIFIER> (multi_var | ε)
+	variable		→ (<const> | <static> | ε) type <IDENTIFIER> ((<ASSIGN> expression | ε) | multi_var) <;>
+	multi_var		→ <,> <IDENTIFIER> (multi_var | ε)
 
-function		→ (<const> | <static> | ε) <type> <IDENTIFIER> <(> arguments <)> <{> statements return <}>
-main			→ <int> <main> <(> <)> <{> statements (return | ε) <}>
-void			→ <void> <IDENTIFIER> <(> arguments <)> <{> statements <}>
-return			→ <return> expression <;>
+	function		→ (<const> | <static> | ε) <type> <IDENTIFIER> <(> parameters <)> <{> statements return <}>
+	main			→ <int> <main> <(> <)> <{> statements (return | ε) <}>
+	void			→ <void> <IDENTIFIER> <(> parameters <)> <{> statements <}>
+	return			→ <return> expression <;>
 
-arguments		→ argument (<COMMA> arguments| ε)
-argument		→ type <IDENTIFIER>
+	parameters		→ parameter (<COMMA> parameters | ε)
+	parameter		→ type <IDENTIFIER>
 
-statements		→ statement statements | ε
+	statements		→ statement statements | ε
 statement		→ variable | iostream | assignment | increment <;> | decrement <;> | call_statement | loops | if | return
 
-iostream		→ cout | cin
-cin				→ <cin> <RIGHTSHIFT> <IDENTIFIER> <;>
-cout			→ <cout> ostrings <;>
-ostrings		→ ostring (ostrings | ε)
-ostring			→ <LEFTSHIFT> expression
+	iostream		→ cout | cin
+	cin				→ <cin> <RIGHTSHIFT> <IDENTIFIER> <;>
+	cout			→ <cout> ostrings <;>
+	ostrings		→ ostring (ostrings | ε)
+	ostring			→ <LEFTSHIFT> expression
 
-assignment		→ <IDENTIFIER> assign_op expression <;>
+	assignment		→ <IDENTIFIER> assign_op expression <;>
 
-expression		→ term subterm
-term			→ factor subfactor
-subterm			→ add_sub term subterm | ε
-factor			→ <(> expression <)> | <IDENTIFIER> | literal | increment | decrement | function_call
-subfactor		→ mul_div_mod factor subfactor | ε
+	expression		→ term subterm
+	term			→ factor subfactor
+	subterm			→ add_sub term subterm | ε
+	factor			→ <(> expression <)> | <IDENTIFIER> | literal | increment | decrement | function_call
+	subfactor		→ mul_div_mod factor subfactor | ε
 
-increment		→ <INCREMENT> <IDENTIFIER> | <IDENTIFIER> <INCREMENT>
-decrement		→ <DECREMENT> <IDENTIFIER> | <IDENTIFIER> <DECREMENT>
+	increment		→ <INCREMENT> <IDENTIFIER> | <IDENTIFIER> <INCREMENT>
+	decrement		→ <DECREMENT> <IDENTIFIER> | <IDENTIFIER> <DECREMENT>
 
-function_call	→ <IDENTIFIER> <(> (parameters | ε) <)>
-parameters		→ expression (<,> parameters | ε)
-call_statement	→ function_call <;>
+	function_call	→ <IDENTIFIER> <(> (arguments | ε) <)>
+	arguments		→ expression (<,> arguments | ε)
+	call_statement	→ function_call <;>
 
 loops			→ for | while | dowhile
-for				→ <for> <(> (type | ε) <IDENTIFIER> <ASSIGN> expression <;> conditions <;> update <)> <{> statements <}>
+	for				→ <for> <(> (type | ε) <IDENTIFIER> <ASSIGN> expression <;> conditions <;> update <)> <{> statements <}>
 while			→ <while> <(> conditions <)> <{> statements <}>
 dowhile			→ <do> <{> statements <}> <while> <(> conditions <)> <;>
+
+	update			→ increment |  decrement | <IDENTIFIER> assign_op expression
 
 if				→ <if> <(> conditions <)> <{> statements <}> elseif else
 elseif			→ <else if> <(> conditions <)> <{> statements <}> elseif | ε
 else			→ <else> <{> statements <}> | ε
 
-conditions		→ condition (logical_op conditions | ε)
-condition		→ <(> conditions <)> | comparison
-comparison		→ expression compare_op expression
+	conditions		→ condition (logical_op conditions | ε)
+	condition		→ <(> conditions <)> | comparison
+	comparison		→ expression compare_op expression
 
-update			→ increment |  decrement | <IDENTIFIER> assign_op expression

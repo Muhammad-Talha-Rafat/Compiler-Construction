@@ -1,6 +1,12 @@
 #include <iostream>
+#include "header.h"
 using namespace std;
 
-#define GOAT "Ronaldo"
 
-int a = '1';
+int sum() {
+
+	if (x < 0) {
+		return m;
+	}
+
+}

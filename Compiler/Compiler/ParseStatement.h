@@ -4,458 +4,728 @@ using namespace std;
 
 
 Node* Parser::parse_statements() {
-	set<string> statementset = { "++", "--", "for", "while", "do", "else if", "if", "else", "cout", "cin", "const", "static" };
-	
-	Node* statements = new Node("statements");
 
-	while (currentToken().type == "IDENTIFIER" || statementset.count(currentToken().value) || types.count(currentToken().value)) {
-		Node* statement_node = parse_statement();
-		if (statement_node)
-			statements->children.push_back(statement_node);
-	}
-
-	return statements;
-}
+	try {
 
 
 
-Node* Parser::parse_statement() {
+		if (peek().value == "++") {
 
-	Node* statement = new Node("statement");
+			// it's an pre-increment
 
-	if (currentToken().type == "IDENTIFIER") {
+			Node* _increment = parse_increment();
+			_increment->children.push_back(new Node(expectType("SEMICOLON")));
 
-		token identifier = expect("IDENTIFIER");
-		Node* identifier_node = new Node(identifier);
-
-		if (assignment_op.count(currentToken().type)) { // assignment
-
-			Node* assign_node = new Node("assignment");
-
-			assign_node->children.push_back(identifier_node);
-			assign_node->children.push_back(new Node(expect(currentToken().type)));
-
-			Node* expression_node = parse_expression();
-			if (!expression_node)
-				throw runtime_error("Expected an expression");
-			else assign_node->children.push_back(expression_node);
-
-			assign_node->children.push_back(new Node(expect("SEMICOLON")));
-
-			statement->children.push_back(assign_node);
+			return _increment;
 		}
-		else if (currentToken().type == "lBRACE") { // call statement
 
-			Node* function_call_node = new Node("functionCall");
 
-			function_call_node->children.push_back(identifier_node);
-			function_call_node->children.push_back(new Node(expect("lBRACE")));
 
-			if (currentToken().type == "IDENTIFIER"
-				|| literals.count(currentToken().type)
-				|| tokens[cursor].value == "true"
-				|| tokens[cursor].value == "false") {
+		else if (peek().value == "--") {
 
-				Node* parameters_node = parse_parameters();
-				if (parameters_node)
-					function_call_node->children.push_back(parameters_node);
+			// it's a pre-decrement
+
+			Node* _decrement = parse_decrement();
+			_decrement->children.push_back(new Node(expectType("SEMICOLON")));
+
+			return _decrement;
+		}
+
+
+
+		else if (types.count(peek().value) || peek().value == "const" || peek().value == "static") {
+
+			// it's a declaration/definition
+
+			int offset = 0;
+
+			if (peek().value == "const" || peek().value == "static") {
+				offset++;
+
+				if (!types.count(peek(offset).value) && peek(offset).value != "void")
+					throw ExpectedTypeToken();
 			}
 
-			function_call_node->children.push_back(new Node(expect("rBRACE")));
-			function_call_node->children.push_back(new Node(expect("SEMICOLON")));
+			if ((types.count(peek(offset).value))) {
 
-			statement->children.push_back(function_call_node);
-		}
-		else if (currentToken().type == "INCREMENT" || currentToken().type == "DECREMENT") { // post increment/decrement
-			Node* IncDec_node = new Node(currentToken().value == "++" ? "increment" : "decrement");
+				if (peek(offset + 2).type == "lPARENTHESIS")
+					throw SyntaxError("nested function detected ahead");
 
-			IncDec_node->children.push_back(identifier_node);
-			IncDec_node->children.push_back(new Node(expect(currentToken().type)));
-			IncDec_node->children.push_back(new Node(expect("SEMICOLON")));
+				Node* variable_node = parse_variable();
 
-			statement->children.push_back(IncDec_node);
-		}
-		else throw runtime_error("Syntax error: expected a valid statement");
-
-	}
-	else if (currentToken().value == "const" || currentToken().value == "static" || types.count(currentToken().value)) {
-
-		Node* declare_node = parse_declare(); // declaration / initialization
-		if (declare_node)
-			statement->children.push_back(declare_node);
-
-	}
-	else if (currentToken().value == "++" || currentToken().value == "--") { // pre increment/decrement
-
-		Node* IncDec_node = new Node(currentToken().value == "++" ? "increment" : "decrement");
-
-		IncDec_node->children.push_back(new Node(expect(currentToken().type)));
-		IncDec_node->children.push_back(new Node(expect("IDENTIFIER")));
-		IncDec_node->children.push_back(new Node(expect("SEMICOLON")));
-
-		statement->children.push_back(IncDec_node);
-
-	}
-	else if (currentToken().value == "cout" || currentToken().value == "cin") { // I/O
-
-		Node* iostream_node = new Node(currentToken().value == "cout" ? "output" : "input");
-
-		Node* stream_node = parse_iostream(currentToken().value);
-		if (stream_node)
-			iostream_node->children.push_back(stream_node);
-
-		statement->children.push_back(iostream_node);
-
-	}
-	else if (currentToken().value == "if") { // if block
-
-		Node* if_node = new Node("if_block");
-
-		if_node->children.push_back(new Node(expect(currentToken().type)));
-		if_node->children.push_back(new Node(expect("lBRACE")));
-
-		if (currentToken().type != "rBRACE") {
-			Node* conditions_node = parse_conditions();
-			if (conditions_node)
-				if_node->children.push_back(conditions_node);
+				return variable_node;
+			}
 		}
 
-		if_node->children.push_back(new Node(expect("rBRACE")));
 
-		// {block}
 
-		if_node->children.push_back(new Node(expect("lPARENTHESIS")));
+		else if (peek().type == "IDENTIFIER") {
 
-		if (currentToken().type != "rPARENTHESIS") {
-			Node* if_body_node = parse_statements();
-			if (if_body_node)
-				if_node->children.push_back(if_body_node);
+			// it's an assignment, or post-increment, or post-decrement, or a call statement
+
+			if (peek(1).value == "++") {
+				Node* _increment = parse_increment();
+				_increment->children.push_back(new Node(expectType("SEMICOLON")));
+
+				return _increment;
+			}
+			else if (peek(1).value == "--") {
+				Node* _decrement = parse_decrement();
+				_decrement->children.push_back(new Node(expectType("SEMICOLON")));
+
+				return _decrement;
+			}
+			else if (peek(1).type == "lPARENTHESIS") {
+				Node* _call_statement = new Node("call_statement");
+
+				_call_statement->children.push_back(new Node(expectType("IDENTIFIER")));
+				_call_statement->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+				// validate argumemnts
+
+				if (peek().type != "rPARENTHESIS") {
+					Node* arguments_node = parse_arguments();
+					if (arguments_node)
+						_call_statement->children.push_back(arguments_node);
+				}
+
+				_call_statement->children.push_back(new Node(expectType("rPARENTHESIS")));
+				_call_statement->children.push_back(new Node(expectType("SEMICOLON")));
+
+				return _call_statement;
+			}
+			else if (peek(1).type == "ASSIGN") {
+				Node* _assignment = new Node("assignment");
+
+				_assignment->children.push_back(new Node(expectType("IDENTIFIER")));
+				_assignment->children.push_back(new Node(expectType("ASSIGN")));
+
+				Node* expression_node = parse_expression();
+				if (expression_node)
+					_assignment->children.push_back(expression_node);
+
+				_assignment->children.push_back(new Node(expectType("SEMICOLON")));
+
+				return _assignment;
+			}
+			else throw SyntaxError("invalid statement starting with \"IDENTIFIER\"");
 		}
 
-		if_node->children.push_back(new Node(expect("rPARENTHESIS")));
 
-		while (currentToken().value == "else if") {
 
-			Node* elseif_node = new Node("elseif_block");
+		else if (peek().value == "cout") {
 
-			elseif_node->children.push_back(new Node(expect(currentToken().type)));
-			elseif_node->children.push_back(new Node(expect("lBRACE")));
+			// it's an output statement
 
-			if (currentToken().type != "rBRACE") {
+			Node* _cout = new Node("output");
+
+			try {
+				_cout->children.push_back(new Node(expectValue("cout")));
+
+				while (peek().type != "SEMICOLON") {
+					_cout->children.push_back(new Node(expectType("LEFT_SHIFT")));
+
+					if (peek().value == "endl")
+						_cout->children.push_back(new Node(expectValue("endl")));
+					else {
+						Node* expression_node = parse_expression();
+
+						if (expression_node && expression_node->type == "error")
+							throw runtime_error(expression_node->value);
+
+						if (!expression_node)
+							throw ExpectedExpression();
+
+						_cout->children.push_back(expression_node);
+					}
+				}
+
+				_cout->children.push_back(new Node(expectType("SEMICOLON")));
+			}
+			catch (const runtime_error& e) {
+				_cout->children.push_back(new Node("error", e.what()));
+			}
+
+			return _cout;
+		}
+
+
+
+		else if (peek().value == "cin") {
+
+			// it's an input statement
+
+			Node* _cin = new Node("input");
+
+			try {
+				_cin->children.push_back(new Node(expectValue("cin")));
+				_cin->children.push_back(new Node(expectType("RIGHT_SHIFT")));
+				_cin->children.push_back(new Node(expectType("IDENTIFIER")));
+				_cin->children.push_back(new Node(expectType("SEMICOLON")));
+			}
+			catch (const runtime_error& e) {
+				_cin->children.push_back(new Node("error", e.what()));
+			}
+
+			return _cin;
+		}
+
+
+
+		else if (peek().value == "for") {
+
+			Node* _for_loop = new Node("for_loop");
+
+			try {
+				_for_loop->children.push_back(new Node(expectValue("for")));
+				_for_loop->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+				// initialization
+
+				if (types.count(peek().value) || peek().type == "IDENTIFIER") {
+
+					// declaration
+
+					Node* variable_node = new Node("init");
+
+					try {
+						if (types.count(peek().value))
+							variable_node->children.push_back(new Node(consume())); // type
+
+						variable_node->children.push_back(new Node(expectType("IDENTIFIER")));
+						variable_node->children.push_back(new Node(expectType("ASSIGN")));
+
+						Node* expression_node = parse_expression();
+						if (expression_node)
+							variable_node->children.push_back(expression_node);
+					}
+					catch (const runtime_error& e) {
+						variable_node->children.push_back(new Node("error", e.what()));
+					}
+
+					_for_loop->children.push_back(variable_node);
+
+				}
+				else throw SyntaxError("expected a declaration or assignment but \"" + peek().value + "\" encountered");
+
+				_for_loop->children.push_back(new Node(expectType("SEMICOLON")));
+
+				// conditions
+
 				Node* conditions_node = parse_conditions();
 				if (conditions_node)
-					elseif_node->children.push_back(conditions_node);
+					_for_loop->children.push_back(conditions_node);
+
+				_for_loop->children.push_back(new Node(expectType("SEMICOLON")));
+
+				// update
+
+				Node* update_node = new Node("update");
+
+				if (peek().value == "++" || peek().value == "--") {
+					try {
+						if (peek().value == "++")
+							update_node->children.push_back(parse_increment());
+						else update_node->children.push_back(parse_decrement());
+					}
+					catch (const runtime_error& e) {
+						update_node->children.push_back(new Node("error", e.what()));
+					}
+				}
+				else if (peek().type == "IDENTIFIER") {
+
+					if (peek(1).value == "++" || peek(1).value == "--") {
+						try {
+							if (peek(1).value == "++")
+								update_node->children.push_back(parse_increment());
+							else update_node->children.push_back(parse_decrement());
+						}
+						catch (const runtime_error& e) {
+							update_node->children.push_back(new Node("error", e.what()));
+						}
+					}
+
+					else try {
+						update_node->children.push_back(new Node(expectType("IDENTIFIER")));
+
+						if (!assignment_op.count(peek().type))
+							throw SyntaxError("expected an assignment operator but \"" + peek().value + "\" encountered");
+
+						update_node->children.push_back(new Node(consume()));
+
+						Node* expression_node = parse_expression();
+						if (expression_node)
+							update_node->children.push_back(expression_node);
+					}
+					catch (const runtime_error& e) {
+						update_node->children.push_back(new Node("error", e.what()));
+					}
+
+				}
+				else throw SyntaxError("expected an update statement but \"" + peek().value + "\" encountered");
+
+				_for_loop->children.push_back(update_node);
+
+				_for_loop->children.push_back(new Node(expectType("rPARENTHESIS")));
+
+				// block
+
+				_for_loop->children.push_back(new Node(expectType("lBRACE")));
+
+				Node* _block = new Node("block");
+
+				while (peek().type != "rBRACE") {
+					_block->children.push_back(parse_statements());
+					if (_block->children.empty() && _block->children.back()->type == "error")
+						throw runtime_error(_block->children.back()->value);
+				}
+
+				if (!_block->children.empty())
+					_for_loop->children.push_back(_block);
+
+				_for_loop->children.push_back(new Node(expectType("rBRACE")));
+			}
+			catch (const runtime_error& e) {
+				_for_loop->children.push_back(new Node("error", e.what()));
 			}
 
-			elseif_node->children.push_back(new Node(expect("rBRACE")));
+			return _for_loop;
+		}
 
-			// {block}
 
-			elseif_node->children.push_back(new Node(expect("lPARENTHESIS")));
 
-			if (currentToken().type != "rPARENTHESIS") {
-				Node* elseif_body_node = parse_statements();
-				if (elseif_body_node)
-					elseif_node->children.push_back(elseif_body_node);
+		else if (peek().value == "while") {
+
+			// it's a "while" loop
+
+			Node* _while_loop = new Node("while_loop");
+
+			try {
+
+				_while_loop->children.push_back(new Node(expectValue("while")));
+				_while_loop->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+				Node* conditions_node = parse_conditions();
+				if (conditions_node)
+					_while_loop->children.push_back(conditions_node);
+
+				_while_loop->children.push_back(new Node(expectType("rPARENTHESIS")));
+				_while_loop->children.push_back(new Node(expectType("lBRACE")));
+
+				// block
+
+				Node* _block = new Node("block");
+
+				while (peek().type != "rBRACE") {
+					_block->children.push_back(parse_statements());
+					if (_block->children.empty() && _block->children.back()->type == "error")
+						throw runtime_error(_block->children.back()->value);
+				}
+
+				if (!_block->children.empty())
+					_while_loop->children.push_back(_block);
+
+				_while_loop->children.push_back(new Node(expectType("rBRACE")));
+
+			}
+			catch (const runtime_error & e) {
+				_while_loop->children.push_back(new Node("error", e.what()));
 			}
 
-			elseif_node->children.push_back(new Node(expect("rPARENTHESIS")));
-			if_node->children.push_back(elseif_node);
+			return _while_loop;
 		}
-
-		if (currentToken().value == "else") {
-
-			Node* else_node = new Node("else_block");
-
-			else_node->children.push_back(new Node(expect(currentToken().type)));
-
-			// no condition
-
-			else_node->children.push_back(new Node(expect("lPARENTHESIS")));
-
-			if (currentToken().type != "rPARENTHESIS") {
-				Node* else_body_node = parse_statements();
-				if (else_body_node)
-					else_node->children.push_back(else_body_node);
-			}
-
-			else_node->children.push_back(new Node(expect("rPARENTHESIS")));
-
-			if_node->children.push_back(else_node);
-		}
-
-		statement->children.push_back(if_node);
-
-	}
-	else if (currentToken().value == "else if" || currentToken().value == "else") {
-
-		statement->children.push_back(new Node(expect(currentToken().type)));
-		throw runtime_error("Syntax error: expected an 'if' statement before this");
-
-	}
-	else if (currentToken().value == "for") { // 
-
-		Node* for_loop = new Node("for_loop");
-
-		for_loop->children.push_back(new Node(expect(currentToken().type)));
-		for_loop->children.push_back(new Node(expect("lBRACE")));
-
-		// assignment
-
-		string type = "int"; // default
-		Node* assign_node = new Node("init");
-		if (types.count(currentToken().value)) {
-			type = currentToken().value;
-			assign_node->children.push_back(new Node(expect(currentToken().type)));
-		}
-
-		assign_node->children.push_back(new Node(expect("IDENTIFIER")));
-		assign_node->children.push_back(new Node(expect("ASSIGN")));
-
-		if (currentToken().type == "SEMICOLON")
-			throw ExpectedExpression(type);
-
-		Node* expression_node = parse_expression(type);
-		if (expression_node)
-			assign_node->children.push_back(expression_node);
-
-		for_loop->children.push_back(assign_node);
-
-		for_loop->children.push_back(new Node(expect("SEMICOLON")));
-
-		// condition
-
-		Node* condition_node = new Node("condition");
-
-		if (currentToken().type == "SEMICOLON")
-			throw UnexpectedToken("condition", currentToken());
-
-		Node* conditions_node = parse_conditions();
-		if (conditions_node)
-			for_loop->children.push_back(conditions_node);
-
-		for_loop->children.push_back(new Node(expect("SEMICOLON")));
-
-		// update
-
-		Node* update_node = new Node("update");
-
-		if (currentToken().type == "INCREMENT" || currentToken().type == "DECREMENT") {
-
-			update_node->children.push_back(new Node(expect(currentToken().type)));
-			update_node->children.push_back(new Node(expect("IDENTIFIER")));
-
-		}
-		else if (currentToken().type == "IDENTIFIER") {
-
-			update_node->children.push_back(new Node(expect(currentToken().type)));
-
-			if (currentToken().type == "INCREMENT" || currentToken().type == "DECREMENT")
-				update_node->children.push_back(new Node(expect(currentToken().type)));
-
-		}
-		else throw runtime_error("Syntax error: give a valid update statement");
-
-		for_loop->children.push_back(update_node);
-
-		for_loop->children.push_back(new Node(expect("rBRACE")));
-
-		// {block}
-
-		for_loop->children.push_back(new Node(expect("lPARENTHESIS")));
-
-		if (currentToken().type != "rPARENTHESIS") {
-			Node* statements_node = parse_statements();
-			if (statements_node)
-				for_loop->children.push_back(statements_node);
-		}
-
-		for_loop->children.push_back(new Node(expect("rPARENTHESIS")));
-
-		statement->children.push_back(for_loop);
-
-	}
-	else if (currentToken().value == "while") {
-
-		Node* while_loop = new Node("while_loop");
-
-		while_loop->children.push_back(new Node(expect(currentToken().type)));
-		while_loop->children.push_back(new Node(expect("lBRACE")));
-
-		if (currentToken().type != "rBRACE") {
-			Node* conditions_node = parse_conditions();
-			if (conditions_node)
-				while_loop->children.push_back(conditions_node);
-		}
-
-		while_loop->children.push_back(new Node(expect("rBRACE")));
-
-		// {block}
 		
-		while_loop->children.push_back(new Node(expect("lPARENTHESIS")));
+
+
+		else if (peek().value == "do") {
+
+			// it's a do "while" loop
+
+			Node* _do_while_loop = new Node("do_while_loop");
+
+			try {
+
+				_do_while_loop->children.push_back(new Node(expectValue("do")));
+				_do_while_loop->children.push_back(new Node(expectType("lBRACE")));
+
+				// block
+
+				Node* _block = new Node("block");
+
+				while (peek().type != "rBRACE") {
+					_block->children.push_back(parse_statements());
+					if (_block->children.empty() && _block->children.back()->type == "error")
+						throw runtime_error(_block->children.back()->value);
+				}
+
+				if (!_block->children.empty())
+					_do_while_loop->children.push_back(_block);
+
+				_do_while_loop->children.push_back(new Node(expectType("rBRACE")));
+				_do_while_loop->children.push_back(new Node(expectValue("while")));
+				_do_while_loop->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+				Node* conditions_node = parse_conditions();
+				if (conditions_node)
+					_do_while_loop->children.push_back(conditions_node);
+
+				_do_while_loop->children.push_back(new Node(expectType("rPARENTHESIS")));
+				_do_while_loop->children.push_back(new Node(expectType("SEMICOLON")));
+			}
+			catch (const runtime_error & e) {
+				_do_while_loop->children.push_back(new Node("error", e.what()));
+			}
+
+			return _do_while_loop;
+		}
 		
-		if (currentToken().type != "rPARENTHESIS") {
-			Node* statements_node = parse_statements();
-			if (statements_node)
-				while_loop->children.push_back(statements_node);
+
+
+		else if (peek().value == "if") {
+
+			// it's an "if" block, handling "else if" and "else" as well
+
+			Node* _decision = new Node("decision_tree");
+
+			try {
+
+				Node* _if_block = new Node("if_block");
+
+				_if_block->children.push_back(new Node(expectValue("if")));
+				_if_block->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+				Node* conditions_node = parse_conditions();
+				if (conditions_node)
+					_if_block->children.push_back(conditions_node);
+
+				_if_block->children.push_back(new Node(expectType("rPARENTHESIS")));
+				_if_block->children.push_back(new Node(expectType("lBRACE")));
+
+				// block
+
+				Node* _block = new Node("block");
+
+				while (peek().type != "rBRACE") {
+					_block->children.push_back(parse_statements());
+					if (_block->children.empty() && _block->children.back()->type == "error")
+						throw runtime_error(_block->children.back()->value);
+				}
+
+				if (!_block->children.empty())
+					_if_block->children.push_back(_block);
+
+				_if_block->children.push_back(new Node(expectType("rBRACE")));
+
+				_decision->children.push_back(_if_block);
+
+				// handle "else if" and "else"
+
+				while (peek().value == "else if" || peek().value == "else") {
+
+					if (peek().value == "else if") {
+
+						Node* _else_if_block = new Node("else_if_block");
+
+						_else_if_block->children.push_back(new Node(expectValue("else if")));
+						_else_if_block->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+						Node* conditions_node = parse_conditions();
+						if (conditions_node)
+							_else_if_block->children.push_back(conditions_node);
+
+						_else_if_block->children.push_back(new Node(expectType("rPARENTHESIS")));
+						_else_if_block->children.push_back(new Node(expectType("lBRACE")));
+
+						// block
+
+						Node* else_if_block = new Node("block");
+
+						while (peek().type != "rBRACE") {
+							else_if_block->children.push_back(parse_statements());
+							if (else_if_block->children.empty() && else_if_block->children.back()->type == "error")
+								throw runtime_error(else_if_block->children.back()->value);
+						}
+
+						if (!else_if_block->children.empty())
+							_else_if_block->children.push_back(else_if_block);
+
+						_else_if_block->children.push_back(new Node(expectType("rBRACE")));
+
+						_decision->children.push_back(_else_if_block);
+					}
+					else {
+						Node* _else_block = new Node("else_block");
+
+						_else_block->children.push_back(new Node(expectValue("else")));
+						_else_block->children.push_back(new Node(expectType("lBRACE")));
+
+						// block
+
+						Node* else_block = new Node("block");
+
+						while (peek().type != "rBRACE") {
+							else_block->children.push_back(parse_statements());
+							if (else_block->children.empty() && else_block->children.back()->type == "error")
+								throw runtime_error(else_block->children.back()->value);
+						}
+
+						if (!else_block->children.empty())
+							_else_block->children.push_back(else_block);
+
+						_else_block->children.push_back(new Node(expectType("rBRACE")));
+
+						_decision->children.push_back(_else_block);
+
+						break;
+					}
+				}
+			}
+			catch (const runtime_error& e) {
+				_decision->children.push_back(new Node("error", e.what()));
+			}
+
+			return _decision;
+		}
+		
+
+
+		else if (peek().value == "else if" || peek().value == "else") {
+
+			// it's an "else if" or "else" block without an "if" block (error)
+			throw SyntaxError("Missing \"if\" block before \"" + peek().value + "\"");
+
+		}
+		
+		
+		
+		else if (peek().value == "return") {
+
+			// it's a return statement
+
+			if (peek().value == "return") {
+				Node* return_node = parse_return();
+				return return_node;
+			}
 		}
 
-		while_loop->children.push_back(new Node(expect("rPARENTHESIS")));
 
-		statement->children.push_back(while_loop);
+
+		else throw SyntaxError("expected a valid statement but \"" + peek().value + "\" encountered");
 
 	}
-	else if (currentToken().value == "do") {
-
-		Node* dowhile_loop = new Node("dowhile_loop");
-
-		dowhile_loop->children.push_back(new Node(expect(currentToken().type)));
-
-		// {block}
-
-		dowhile_loop->children.push_back(new Node(expect("lPARENTHESIS")));
-
-		if (currentToken().type != "rPARENTHESIS") {
-			Node* statements_node = parse_statements();
-			if (statements_node)
-				dowhile_loop->children.push_back(statements_node);
-		}
-
-		dowhile_loop->children.push_back(new Node(expect("rPARENTHESIS")));
-
-		// (conditions)
-
-		dowhile_loop->children.push_back(new Node(expect("KEYWORD", "while")));
-		dowhile_loop->children.push_back(new Node(expect("lBRACE")));
-
-		if (currentToken().type != "rBRACE") {
-			Node* conditions_node = parse_conditions();
-			if (conditions_node)
-				dowhile_loop->children.push_back(conditions_node);
-		}
-
-		dowhile_loop->children.push_back(new Node(expect("rBRACE")));
-		dowhile_loop->children.push_back(new Node(expect("SEMICOLON")));
-
-		statement->children.push_back(dowhile_loop);
-
+	catch (const runtime_error& e) {
+		Node* error_node = new Node("error", e.what());
+		return error_node;
 	}
 
-	return statement;
+	return nullptr;
 }
 
 
 
-Node* Parser::parse_iostream(const string& stream) {
+Node* Parser::parse_return() {
 
-	Node* iostream = new Node("iostream");
+	Node* _return = new Node("return");
 
-	if (stream == "cout") {
-		iostream->children.push_back(new Node(expect("KEYWORD", "cout")));
+	_return->children.push_back(new Node(consume()));
 
-		Node* ostring_node = parse_ostring();
-		if (ostring_node)
-			iostream->children.push_back(ostring_node);
+	Node* expression_node = parse_expression();
+	if (expression_node)
+		_return->children.push_back(expression_node);
 
-		iostream->children.push_back(new Node(expect("SEMICOLON")));
-	}
-	else { // stream == "cin"
+	_return->children.push_back(new Node(expectType("SEMICOLON")));
 
-		iostream->children.push_back(new Node(expect("KEYWORD", "cin")));
-		iostream->children.push_back(new Node(expect("RIGHT_SHIFT")));
-		iostream->children.push_back(new Node(expect("IDENTIFIER")));
-		iostream->children.push_back(new Node(expect("SEMICOLON")));
-	}
-
-	return iostream;
+	return _return;
 }
 
 
 
-Node* Parser::parse_ostring() {
+Node* Parser::parse_increment() {
 
-	Node* ostring = new Node("ostring");
+	Node* _increment = new Node("increment");
 
-	ostring->children.push_back(new Node(expect("LEFT_SHIFT")));
-
-	if (currentToken() == token{ "KEYWORD", "endl" })
-		ostring->children.push_back(new Node(expect(currentToken().type)));
-	else {
-		Node* expression_node = parse_expression();
-		if (expression_node)
-			ostring->children.push_back(expression_node);
+	try {
+		if (peek().value == "++") {
+			// pre-increment
+			_increment->children.push_back(new Node(consume()));
+			_increment->children.push_back(new Node(expectType("IDENTIFIER")));
+		}
+		else {
+			// post-increment
+			_increment->children.push_back(new Node(expectType("IDENTIFIER")));
+			_increment->children.push_back(new Node(expectValue("++")));
+		}
+	}
+	catch (const runtime_error& e) {
+		_increment->children.push_back(new Node("error", e.what()));
 	}
 
-	if (currentToken().type == "LEFT_SHIFT") {
-		Node* ostring_node = parse_ostring();
-		if (ostring_node)
-			ostring->children.push_back(ostring_node);
+	return _increment;
+}
+
+
+
+Node* Parser::parse_decrement() {
+
+	Node* _decrement = new Node("decrement");
+
+	try {
+		if (peek().value == "--") {
+			// pre-decrement
+			_decrement->children.push_back(new Node(consume()));
+			_decrement->children.push_back(new Node(expectType("IDENTIFIER")));
+		}
+		else {
+			// post-decrement
+			_decrement->children.push_back(new Node(expectType("IDENTIFIER")));
+			_decrement->children.push_back(new Node(expectValue("--")));
+		}
+	}
+	catch (const runtime_error& e) {
+		_decrement->children.push_back(new Node("error", e.what()));
 	}
 
-	return ostring;
+	return _decrement;
 }
 
 
 
 Node* Parser::parse_conditions() {
 
-	Node* conditions = new Node("conditions");
+	Node* _conditions = new Node("conditions");
 
-	Node* condition_node = parse_condition();
-	if (condition_node)
-		conditions->children.push_back(condition_node);
+	try {
+		Node* left_node = nullptr;
 
-	if (logical_op.count(currentToken().type)) {
-		conditions->children.push_back(new Node(expect(currentToken().type)));
+		if (peek().type == "lPARENTHESIS") {
+			_conditions->children.push_back(new Node(expectType("lPARENTHESIS")));
 
-		Node* conditions_node = parse_conditions();
-		if (conditions_node)
-			conditions->children.push_back(conditions_node);
+			Node* conditions_node = parse_conditions();
+			if (conditions_node)
+				_conditions->children.push_back(conditions_node);
+
+			_conditions->children.push_back(new Node(expectType("rPARENTHESIS")));
+		}
+		else {
+			left_node = parse_comparison();
+			if (left_node)
+				_conditions->children.push_back(left_node);
+		}
+
+		while (logical_op.count(peek().type)) {
+
+			_conditions->children.push_back(new Node(consume())); // AND_LOGIC / OR_LOGIC
+
+			if (peek().type == "lPARENTHESIS") {
+				_conditions->children.push_back(new Node(expectType("lPARENTHESIS")));
+
+				Node* conditions_node = parse_conditions();
+				if (conditions_node)
+					_conditions->children.push_back(conditions_node);
+
+				_conditions->children.push_back(new Node(expectType("rPARENTHESIS")));
+			}
+			else {
+				Node* right_node = parse_comparison();
+				if (right_node)
+					_conditions->children.push_back(right_node);
+			}
+		}
+	}
+	catch (const runtime_error& e) {
+		_conditions->children.push_back(new Node("error", e.what()));
 	}
 
-	return conditions;
-}
-
-
-
-Node* Parser::parse_condition() {
-
-	Node* condition = new Node("condition");
-
-	if (currentToken().type == "lBRACE") {
-		condition->children.push_back(new Node(expect(currentToken().type)));
-
-		Node* conditions_node = parse_conditions();
-		if (conditions_node)
-			condition->children.push_back(conditions_node);
-
-		condition->children.push_back(new Node(expect("rBRACE")));
-	}
-	else {
-		Node* comparison_node = parse_comparison();
-		if (comparison_node)
-			condition->children.push_back(comparison_node);
-	}
-
-	return condition;
+	return _conditions;
 }
 
 
 
 Node* Parser::parse_comparison() {
-	Node* comparison = new Node("comparison");
 
-	Node* expression_node = parse_expression();
-	if (expression_node)
-		comparison->children.push_back(expression_node);
+	Node* _comparison = new Node("comparison");
 
-	if (!comparison_op.count(currentToken().type))
-		throw UnexpectedToken("comparison operator", currentToken());
-	else comparison->children.push_back(new Node(expect(currentToken().type)));
+	try {
+		Node* left_node = parse_expression();
+		if (left_node)
+			_comparison->children.push_back(left_node);
 
-	expression_node = parse_expression();
-	if (expression_node)
-		comparison->children.push_back(expression_node);
+		if (!comparison_op.count(peek().type))
+			throw SyntaxError("expected a comparison operator but \"" + peek().value + "\" encountered");
 
-	return comparison;
+		_comparison->children.push_back(new Node(consume())); // comparison operator
+
+		Node* right_node = parse_expression();
+		if (right_node)
+			_comparison->children.push_back(right_node);
+	}
+	catch (const runtime_error& e) {
+		_comparison->children.push_back(new Node("error", e.what()));
+	}
+
+	return _comparison;
 }
+
+/*
+
+
+a < 0 && (b < 0 || c > 0)
+
+conditions
+	comparison
+		IDENTIFIER: a
+		LESS_THAN: <
+		INTEGER: 0
+	AND_LOGIC: &&
+	lPARENTHESIS: (
+	conditions
+		comparison
+			IDENTIFIER: b
+			LESS_THAN: <
+			INTEGER: 0
+		OR_LOGIC: ||
+		comparison
+			IDENTIFIER: c
+			LESS_THAN: >
+			INTEGER: 0
+	rPARENTHESIS: )
+
+
+
+if (r < 0) {}
+else if (r > 0) {}
+else {}
+
+decision_tree
+	if_block
+		KEYWORD: if
+		lPARENTHESIS: (
+		conditions
+			comparison
+				IDENTIFIER: r
+				SMALLER_THAN: <
+				INTEGER: 0
+		rPARENTHESIS: )
+		lBRACE: {
+		rBRACE: }
+	else_if_block
+		KEYWORD: else if
+		lPARENTHESIS: (
+		conditions
+			comparison
+				IDENTIFIER: r
+				GREATER_THAN: >
+				INTEGER: 0
+		rPARENTHESIS: )
+		lBRACE: {
+		rBRACE: }
+	else_block
+		KEYWORD: else
+		lBRACE: {
+		rBRACE: }
+		
+
+
+
+
+*/

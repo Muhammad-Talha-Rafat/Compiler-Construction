@@ -7,6 +7,7 @@
 using namespace std;
 
 
+
 int main() {
 
     string file = "code.txt";
@@ -18,9 +19,6 @@ int main() {
     Node* root = parser.parse();
 
     root->print();
-
-    //ScopeAnalyzer analyzer;
-    //analyzer.analyse();
 
     return 0;
 }

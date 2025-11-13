@@ -49,8 +49,8 @@ vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
     {"COMMENT", regex("^(//.*|/\\*[^*]*\\*+([^/*][^*]*\\*+)*/)")},
 
-    {"LIBRARY", regex("^<[^>\n]+>")},
-    {"HEADER", regex("^\"[^\"]+\\.h\"")},
+    {"LIBRARY", regex("^<[A-Za-z_0-9\\.]+>")},
+    {"HEADER", regex("^\"[A-Za-z_0-9\\.]+\\.h\"")},
 
     {"ELSEIF", regex(R"(^else\b\s+if\b)")},
     {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*")},

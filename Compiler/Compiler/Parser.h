@@ -56,12 +56,12 @@ runtime_error ExpectedBooleanValue(const string& type) {
 	return runtime_error("ExpectedBooleanValue: expected a bool value for type <" + type + ">");
 }
 
-runtime_error ExpectedExpression(const string& expected) {
-	return runtime_error("ExpectedExpression: expected an assignment (" + expected + ")");
+runtime_error ExpectedExpression() {
+	return runtime_error("ExpectedExpression: an expression was expected here");
 }
 
 runtime_error SyntaxError(const string& message) {
-	return runtime_error(message);
+	return runtime_error("Syntax error: " + message);
 }
 
 
@@ -97,6 +97,12 @@ private:
 		else throw UnexpectedToken(expected, peek());
 	}
 
+	void ignore() {
+		if (cursor < tokens.size())
+			cursor++;
+		else throw UnexpectedEOF();
+	}
+
 
 	set<string> types = { "int", "float", "double", "char", "string", "bool" };
 	set<string> literals = { "INTEGER", "DECIMAL", "STRLITERAL", "CHARACTER", "true", "false" };
@@ -116,37 +122,29 @@ private:
 
 	Node* parse_variable();
 
-	//Node* parse_declare();
-	Node* parse_expression(const string& type);
-	Node* parse_term(const string& type);
-	//Node* parse_subterm(const string& type);
-	Node* parse_factor(const string& type);
-	//Node* parse_subfactor(const string& type);
+	Node* parse_expression();
+	Node* parse_term();
+	Node* parse_factor();
 
-	//Node* parse_functionCall();
-	//Node* parse_parameters();
-	//Node* parse_parameter();
+	Node* parse_functionCall();
+	Node* parse_arguments();
 
 	Node* parse_object();
 	Node* parse_objBlock();
 
 
-	//Node* parse_function(const string& type);
-	//Node* parse_voidfunction();
-	//Node* parse_mainfunction();
-	//Node* parse_arguments();
-	//Node* parse_argument();
+	Node* parse_function(const string& type, const string& name);
+	Node* parse_parameters();
 
-	//Node* parse_statements();
-	//Node* parse_statement();
-	//Node* parse_iostream(const string& stream);
-	//Node* parse_ostring();
+	Node* parse_statements();
 
-	//Node* parse_conditions();
-	//Node* parse_condition();
-	//Node* parse_comparison();
+	Node* parse_increment();
+	Node* parse_decrement();
 
-	//Node* parse_return(const string& type);
+	Node* parse_conditions();
+	Node* parse_comparison();
+
+	Node* parse_return();
 
 public:
 
@@ -162,8 +160,8 @@ public:
 #include "ParseHeader.h"
 #include "ParseDeclaration.h"
 //#include "ParseObject.h"
-//#include "ParseFunction.h"
-//#include "ParseStatement.h"
+#include "ParseFunction.h"
+#include "ParseStatement.h"
 
 
 Node* Parser::parse() {
