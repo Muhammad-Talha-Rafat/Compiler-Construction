@@ -26,6 +26,7 @@ Node* Parser::parse_declarations() {
 						throw ExpectedTypeToken();
 				}
 
+
 				if ((types.count(peek(offset).value) || peek(offset).value == "void") && (peek(offset + 1).type == "IDENTIFIER" || peek(offset + 1).value == "main")) {
 
 					if (peek(offset + 2).type == "lPARENTHESIS") {
@@ -34,6 +35,15 @@ Node* Parser::parse_declarations() {
 
 						string type = peek(offset).value;
 						string name = peek(offset + 1).value;
+
+						if (main_trigger && name == "main")
+							throw SyntaxError("\"main\" function already exists");
+
+
+						if (type == "int" && name == "main")
+							main_trigger = true;
+						else if (type != "int" && name == "main")
+							throw SyntaxError("\"main\" function can only be type \"int\"");
 
 						Node* function_node = parse_function(type, name);
 
@@ -46,13 +56,14 @@ Node* Parser::parse_declarations() {
 
 					}
 					else if (peek(offset + 2).type == "ASSIGN" || peek(offset + 2).type == "COMMA" || peek(offset + 2).type == "SEMICOLON") {
+
 						// it's a variable declaration
+
 						Node* variable_node = parse_variable();
 						if (!variable_node->children.empty() && variable_node->children.back()->type == "error") {
 							_declarations->children.push_back(variable_node);
 							return _declarations;
 						}
-							//throw runtime_error(variable_node->children.back()->value);
 
 						_declarations->children.push_back(variable_node);
 					}
@@ -60,7 +71,20 @@ Node* Parser::parse_declarations() {
 				}
 				else throw SyntaxError("invalid declaration starting with \"" + peek().value + "\"");
 			}
-			else break;
+
+			else if (peek().value == "class" || peek().value == "struct") {
+
+				// it's an object declaration
+
+				Node* object_node = parse_object();
+				if (!object_node->children.empty() && object_node->children.back()->type == "error") {
+					_declarations->children.push_back(object_node);
+					return _declarations;
+				}
+
+				_declarations->children.push_back(object_node);
+			}
+			else throw SyntaxError("invalid token \"" + peek().value + "\" to start a declaration");
 		}
 	}
 	catch (const runtime_error& e) {

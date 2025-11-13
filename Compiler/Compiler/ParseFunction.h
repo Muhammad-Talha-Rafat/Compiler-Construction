@@ -49,7 +49,7 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 			Node* statements_node = parse_statements();
 
-			if (statements_node && !statements_node->children.empty() && statements_node->children.back()->type == "error") {
+			if (statements_node && (!statements_node->children.empty() && statements_node->children.back()->type == "error") || statements_node->type == "error") {
 				_block->children.push_back(statements_node);
 				_function->children.push_back(_block);
 				return _function;
@@ -57,6 +57,9 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 			if (statements_node)
 				_block->children.push_back(statements_node);
+
+			if (statements_node->type == "return")
+				return_trigger = true;
 
 			if (cursor < tokens.size() && peek().value == "return") {
 				if (type == "void")
@@ -70,7 +73,8 @@ Node* Parser::parse_function(const string& type, const string& name) {
 			}
 		}
 
-		_function->children.push_back(_block);
+		if (!_block->children.empty())
+			_function->children.push_back(_block);
 
 		if (name != "main" && type != "void" && !return_trigger)
 			throw SyntaxError("Missing \"return\" statement in non-void function");

@@ -3,56 +3,164 @@ using namespace std;
 
 
 
+
 Node* Parser::parse_object() {
 
-	Node* object = new Node(peek().value == "class" ? "class" : "struct");
+	Node* _object = new Node(peek().value);
 
 	try {
-		object->children.push_back(new Node(consume())); // class / struct
-		object->children.push_back(new Node(expectType("IDENTIFIER")));
-		object->children.push_back(new Node(expectType("lBRACE")));
+		_object->children.push_back(new Node(consume())); // class / struct
+		_object->children.push_back(new Node(expectType("IDENTIFIER")));
+		_object->children.push_back(new Node(expectType("lBRACE")));
 
-		Node* objBlock_node = parse_objBlock();
-		if (objBlock_node)
-			object->children.push_back(objBlock_node);
+		while (peek().type != "rBRACE") {
+			Node* objBlock_node = parse_objBlock();
 
-		object->children.push_back(new Node(expectType("rBRACE")));
-		object->children.push_back(new Node(expectType("SEMICOLON")));
+			if (objBlock_node) {
+				_object->children.push_back(objBlock_node);
+
+				if (objBlock_node->type == "error") {
+					_object->children.push_back(objBlock_node);
+					throw runtime_error(objBlock_node->value);
+				}
+
+				if (!objBlock_node->children.empty() && objBlock_node->children.back()->type == "error") {
+					_object->children.push_back(objBlock_node);
+					throw runtime_error(objBlock_node->children.back()->value);
+				}
+			}
+		}
+
+		_object->children.push_back(new Node(expectType("rBRACE")));
+		_object->children.push_back(new Node(expectType("SEMICOLON")));
 	}
 	catch (const runtime_error& e) {
-		return new Node("error", e.what());
+		_object->children.push_back(new Node("error", e.what()));
 	}
 
-	return object;
+	return _object;
 }
 
 
 
 Node* Parser::parse_objBlock() {
 
-	Node* objBlock = new Node("objBlock");
+	set<string> access = { "private", "public", "protected" };
+
+	if (!access.count(peek().value))
+		return new Node("error", UnexpectedToken("access specifier", peek()).what());
+
+	Node* access_node = new Node(peek().value + "_block");
 
 	try {
+		access_node->children.push_back(new Node(consume())); // private / public / protected
+		access_node->children.push_back(new Node(expectType("COLON")));
 
-		while (peek().value == "private" || peek().value == "public" || peek().value == "protected") {
+		while (peek().type != "rBRACE" && !access.count(peek().value)) {
 
-			objBlock->children.push_back(new Node(consume())); // access keyword
-			objBlock->children.push_back(new Node(expectType("COLON")));
+			int offset = 0;
 
-			while (types.count(currentToken().value) || currentToken().value == "const" || currentToken().value == "static" || currentToken().value = "void") {
-				Node* declare_node = parse_declare();
-				if (declare_node)
-					objBlock->children.push_back(declare_node);
+			if (peek().type == "const" || peek().type == "static")
+				offset++;
+
+			if ((types.count(peek(offset).value) || peek(offset).value == "void") && (peek(offset + 1).type == "IDENTIFIER" || peek(offset + 1).value == "main")) {
+
+				if (peek(offset + 2).type == "lPARENTHESIS") {
+
+					// It's a function declaration/definition
+
+					string type = peek(offset).value;
+					string name = peek(offset + 1).value;
+
+					if (name == "main")
+						throw SyntaxError("an object can't have \"main\" function");
+
+					Node* function_node = parse_function(type, name);
+
+					if (!function_node->children.empty() && function_node->children.back()->type == "error") {
+						access_node->children.push_back(function_node);
+						throw runtime_error(function_node->children.back()->value);
+					}
+
+					access_node->children.push_back(function_node);
+
+				}
+				else if (peek(offset + 2).type == "ASSIGN" || peek(offset + 2).type == "COMMA" || peek(offset + 2).type == "SEMICOLON") {
+
+					// it's a variable declaration
+
+					Node* variable_node = parse_variable();
+					if (!variable_node->children.empty() && variable_node->children.back()->type == "error") {
+						access_node->children.push_back(variable_node);
+						return access_node;
+					}
+
+					access_node->children.push_back(variable_node);
+				}
+				else throw SyntaxError("expected a declaration but \"" + peek(offset + 2).type + "\" encountered");
 			}
+			else throw SyntaxError("invalid declaration starting with \"" + peek().value + "\"");
 		}
 
-		if (currentToken().value != "private" && currentToken().value != "public" && currentToken().value != "protected" && tokens[cursor - 1].value == "{")
-			throw runtime_error("Syntax error: 'access' keyword expected");
 	}
 	catch (const runtime_error& e) {
-		return new Node("error", e.what());
+		access_node->children.push_back(new Node("error", e.what()));
 	}
 
-	return objBlock;
+	return access_node;
 }
 
+
+
+
+
+/*
+
+
+
+class
+	KEYWORD: class							class Integer {
+	IDENTIFIER: Integer						private:
+	lPARENTHESIS: (								int number;
+	private_block							public:
+		KEYWORD: private						void print() {
+		COLON: :									cout << "Integer: " << number << endl;
+		variable								}
+			KEYWORD: int					};
+			IDENTIFIER: number
+			SEMICOLON: ;
+	public_block
+		KEYWORD: public
+		COLON: :
+		function
+			KEYWORD: void
+			IDENTIFIER: print
+			lPARENTHESIS: (
+			rPARENTHESIS: )
+			lBRACE: {
+			block
+				output
+					KEYWORD: cout
+					LEFT_SHIFT: <<
+					STRLITERAL: "Integer: "
+					LEFT_SHIFT: <<
+					IDENTIFIER: number
+					LEFT_SHIFT: <<
+					KEYWORD: endl
+					SEMICOLON: ;
+			rBRACE: }
+	rBRACE: }
+	SEMICOLON: ;
+
+
+
+
+
+
+
+
+
+
+
+
+*/

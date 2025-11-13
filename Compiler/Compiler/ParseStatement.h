@@ -7,8 +7,6 @@ Node* Parser::parse_statements() {
 
 	try {
 
-
-
 		if (peek().value == "++") {
 
 			// it's an pre-increment
@@ -18,9 +16,6 @@ Node* Parser::parse_statements() {
 
 			return _increment;
 		}
-
-
-
 		else if (peek().value == "--") {
 
 			// it's a pre-decrement
@@ -30,8 +25,6 @@ Node* Parser::parse_statements() {
 
 			return _decrement;
 		}
-
-
 
 		else if (types.count(peek().value) || peek().value == "const" || peek().value == "static") {
 
@@ -57,25 +50,32 @@ Node* Parser::parse_statements() {
 			}
 		}
 
-
-
 		else if (peek().type == "IDENTIFIER") {
 
 			// it's an assignment, or post-increment, or post-decrement, or a call statement
 
 			if (peek(1).value == "++") {
+
+				// it's a post-increment
+
 				Node* _increment = parse_increment();
 				_increment->children.push_back(new Node(expectType("SEMICOLON")));
 
 				return _increment;
 			}
 			else if (peek(1).value == "--") {
+
+				// it's a post-decrement
+
 				Node* _decrement = parse_decrement();
 				_decrement->children.push_back(new Node(expectType("SEMICOLON")));
 
 				return _decrement;
 			}
 			else if (peek(1).type == "lPARENTHESIS") {
+
+				// it's a function call statement
+
 				Node* _call_statement = new Node("call_statement");
 
 				_call_statement->children.push_back(new Node(expectType("IDENTIFIER")));
@@ -95,6 +95,9 @@ Node* Parser::parse_statements() {
 				return _call_statement;
 			}
 			else if (peek(1).type == "ASSIGN") {
+
+				// it's an assignment
+
 				Node* _assignment = new Node("assignment");
 
 				_assignment->children.push_back(new Node(expectType("IDENTIFIER")));
@@ -108,10 +111,10 @@ Node* Parser::parse_statements() {
 
 				return _assignment;
 			}
-			else throw SyntaxError("invalid statement starting with \"IDENTIFIER\"");
+
+			// unknown token after IDENTIFIER
+			else return new Node("error", SyntaxError("invalid statement starting with \"IDENTIFIER\"").what());
 		}
-
-
 
 		else if (peek().value == "cout") {
 
@@ -149,8 +152,6 @@ Node* Parser::parse_statements() {
 			return _cout;
 		}
 
-
-
 		else if (peek().value == "cin") {
 
 			// it's an input statement
@@ -170,8 +171,6 @@ Node* Parser::parse_statements() {
 			return _cin;
 		}
 
-
-
 		else if (peek().value == "for") {
 
 			Node* _for_loop = new Node("for_loop");
@@ -179,8 +178,6 @@ Node* Parser::parse_statements() {
 			try {
 				_for_loop->children.push_back(new Node(expectValue("for")));
 				_for_loop->children.push_back(new Node(expectType("lPARENTHESIS")));
-
-				// initialization
 
 				if (types.count(peek().value) || peek().type == "IDENTIFIER") {
 
@@ -236,15 +233,12 @@ Node* Parser::parse_statements() {
 
 					if (peek(1).value == "++" || peek(1).value == "--") {
 						try {
-							if (peek(1).value == "++")
-								update_node->children.push_back(parse_increment());
-							else update_node->children.push_back(parse_decrement());
+							update_node->children.push_back(peek(1).value == "++" ? parse_increment() : parse_decrement());
 						}
 						catch (const runtime_error& e) {
 							update_node->children.push_back(new Node("error", e.what()));
 						}
 					}
-
 					else try {
 						update_node->children.push_back(new Node(expectType("IDENTIFIER")));
 
@@ -292,8 +286,6 @@ Node* Parser::parse_statements() {
 			return _for_loop;
 		}
 
-
-
 		else if (peek().value == "while") {
 
 			// it's a "while" loop
@@ -335,8 +327,6 @@ Node* Parser::parse_statements() {
 			return _while_loop;
 		}
 		
-
-
 		else if (peek().value == "do") {
 
 			// it's a do "while" loop
@@ -378,14 +368,12 @@ Node* Parser::parse_statements() {
 
 			return _do_while_loop;
 		}
-		
-
 
 		else if (peek().value == "if") {
 
 			// it's an "if" block, handling "else if" and "else" as well
 
-			Node* _decision = new Node("decision_tree");
+			Node* _decision = new Node("decision");
 
 			try {
 
@@ -486,29 +474,20 @@ Node* Parser::parse_statements() {
 
 			return _decision;
 		}
-		
-
 
 		else if (peek().value == "else if" || peek().value == "else") {
 
 			// it's an "else if" or "else" block without an "if" block (error)
 			throw SyntaxError("Missing \"if\" block before \"" + peek().value + "\"");
 
-		}
-		
-		
+		}	
 		
 		else if (peek().value == "return") {
 
 			// it's a return statement
+			return parse_return();
 
-			if (peek().value == "return") {
-				Node* return_node = parse_return();
-				return return_node;
-			}
 		}
-
-
 
 		else throw SyntaxError("expected a valid statement but \"" + peek().value + "\" encountered");
 
@@ -527,13 +506,18 @@ Node* Parser::parse_return() {
 
 	Node* _return = new Node("return");
 
-	_return->children.push_back(new Node(consume()));
+	try {
+		_return->children.push_back(new Node(consume()));
 
-	Node* expression_node = parse_expression();
-	if (expression_node)
-		_return->children.push_back(expression_node);
+		Node* expression_node = parse_expression();
+		if (expression_node)
+			_return->children.push_back(expression_node);
 
-	_return->children.push_back(new Node(expectType("SEMICOLON")));
+		_return->children.push_back(new Node(expectType("SEMICOLON")));
+	}
+	catch (const runtime_error& e) {
+		_return->children.push_back(new Node("error", e.what()));
+	}
 
 	return _return;
 }

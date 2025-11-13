@@ -71,7 +71,7 @@ private:
 
 	vector<token> tokens;
 	size_t cursor;
-	bool main = false;
+	bool main_trigger = false;
 
 	token peek(int offset = 0) const {
 		if (cursor + offset < tokens.size())
@@ -159,7 +159,7 @@ public:
 #include "AST.h"
 #include "ParseHeader.h"
 #include "ParseDeclaration.h"
-//#include "ParseObject.h"
+#include "ParseObject.h"
 #include "ParseFunction.h"
 #include "ParseStatement.h"
 
@@ -176,6 +176,9 @@ Node* Parser::parse() {
 		Node* declarations_node = parse_declarations();
 		if (declarations_node)
 			root->children.push_back(declarations_node);
+
+		if (!main_trigger)
+			throw SyntaxError("program is missing the \"main\" function");
 	}
 	catch (const runtime_error& e) {
 		root->children.push_back(new Node("error", e.what()));

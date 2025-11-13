@@ -2,11 +2,56 @@
 #include "header.h"
 using namespace std;
 
+// Normal function with return type
+int sum(int x, int y) {
+    return (x + y) * (x - y % 2);
+}
 
-int sum() {
+// Void function (no return)
+void printStatus(int a, int b, int c) {
+    if (a > b && c != 0 || (a <= 20 || (b == 5 && c < 100))) {
+        cout << "Status OK" << endl;
+    } else {
+        cout << "Status NOT OK" << endl;
+    }
+}
 
-	if (x < 0) {
-		return m;
-	}
+int main() {
+    int a = 10;
+    int b = 5;
+    int c = 0;
 
+    // Call to normal function
+    c = sum(a, b);
+
+    // Call to void function
+    printStatus(a, b, c);
+
+    // While loop with decrement
+    while (a > 0 && (b != 0 || c != 0)) {
+        a--;
+        b = b - 1;
+        c = c + a * b;
+    }
+
+    // For loop with nested if
+    for (int i = 0; i < 5; i++) {
+        if (i % 2 == 0 && (a + b > c || (c == 0 && b != 3))) {
+            cout << "Even iteration: " << i << endl;
+        } else {
+            cout << "Odd iteration: " << i << endl;
+            return 0;
+        }
+    }
+
+    // Do-while in else form
+    if (c > 0) {
+        cout << "C positive" << endl;
+    } else {
+        do {
+            c++;
+        } while (c < 10);
+    }
+
+    return 0;
 }
