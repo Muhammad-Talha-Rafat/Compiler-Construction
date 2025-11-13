@@ -49,7 +49,7 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 			Node* statements_node = parse_statements();
 
-			if (statements_node && (!statements_node->children.empty() && statements_node->children.back()->type == "error") || statements_node->type == "error") {
+			if ((statements_node && !statements_node->children.empty() && statements_node->children.back()->type == "error") || statements_node->type == "error") {
 				_block->children.push_back(statements_node);
 				_function->children.push_back(_block);
 				return _function;

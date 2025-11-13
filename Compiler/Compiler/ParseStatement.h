@@ -94,14 +94,19 @@ Node* Parser::parse_statements() {
 
 				return _call_statement;
 			}
-			else if (peek(1).type == "ASSIGN") {
+			else if (assignment_op.count(peek(1).type)) {
 
 				// it's an assignment
 
 				Node* _assignment = new Node("assignment");
 
 				_assignment->children.push_back(new Node(expectType("IDENTIFIER")));
-				_assignment->children.push_back(new Node(expectType("ASSIGN")));
+
+				if (!assignment_op.count(peek().type)) {
+					_assignment->children.push_back(new Node("error", UnexpectedToken("assignment operator", peek()).what()));
+					return _assignment;
+				}
+				_assignment->children.push_back(new Node(consume())); // assignment operator
 
 				Node* expression_node = parse_expression();
 				if (expression_node)
@@ -270,7 +275,7 @@ Node* Parser::parse_statements() {
 
 				while (peek().type != "rBRACE") {
 					_block->children.push_back(parse_statements());
-					if (_block->children.empty() && _block->children.back()->type == "error")
+					if (!_block->children.empty() && _block->children.back()->type == "error")
 						throw runtime_error(_block->children.back()->value);
 				}
 

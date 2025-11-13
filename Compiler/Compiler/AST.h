@@ -4,6 +4,7 @@
 using namespace std;
 
 struct Node {
+
     string type;
     string value;
     vector<Node*> children;
