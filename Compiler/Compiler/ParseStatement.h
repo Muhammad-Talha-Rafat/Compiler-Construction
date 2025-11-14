@@ -188,11 +188,13 @@ Node* Parser::parse_statements() {
 
 					// declaration
 
-					Node* variable_node = new Node("init");
+					Node* variable_node = new Node("assignment");
 
 					try {
-						if (types.count(peek().value))
+						if (types.count(peek().value)) {
+							variable_node->type = "variable";
 							variable_node->children.push_back(new Node(consume())); // type
+						}
 
 						variable_node->children.push_back(new Node(expectType("IDENTIFIER")));
 						variable_node->children.push_back(new Node(expectType("ASSIGN")));

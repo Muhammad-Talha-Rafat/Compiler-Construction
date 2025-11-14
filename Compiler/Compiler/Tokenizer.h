@@ -6,10 +6,13 @@
 #include <set>
 using namespace std;
 
+
+
 struct rule {
     string type;
     regex Regex;
 };
+
 
 
 struct token {
@@ -37,13 +40,16 @@ struct token {
     }
 };
 
+
+
 set<string> KEYWORDS = { "#include", "#define", "using", "namespace",
-                        "int", "float", "double", "char", "string", "bool", "void",
                         "main", "return", "endl", "cout", "cin", "auto",
                         "do", "while", "for", "break", "continue", "true", "false",
                         "if", "else", "switch", "case", "default", "try", "catch", "throw",
                         "static", "const", "new", "delete", "sizeof", "this",
                         "class", "struct", "template", "enum", "public", "private", "protected" };
+
+set<string> TYPES = { "int", "float", "double", "char", "string", "bool", "void" };
 
 vector<rule> Rules = {
     {"WHITESPACE", regex("^\\s+")},
@@ -117,6 +123,8 @@ vector<rule> Rules = {
     {"rBRACKET", regex("^\\]")}
 };
 
+
+
 static vector<token> tokenize(const string& filename) {
     ifstream file(filename);
     string code((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
@@ -137,8 +145,10 @@ static vector<token> tokenize(const string& filename) {
                 if (rule.type != "WHITESPACE" && rule.type != "COMMENT") {
                     if (!tokens.empty() && tokens.back().value != "#include" && rule.type == "HEADER" )
                         tokens.push_back({ "STRLITERAL", match.str() });
-                    else if (KEYWORDS.find(match.str()) != KEYWORDS.end() || rule.type == "ELSEIF")
+                    else if (KEYWORDS.count(match.str()) || rule.type == "ELSEIF")
                         tokens.push_back({ "KEYWORD", match.str() });
+                    else if (TYPES.count(match.str()))
+                        tokens.push_back({ "TYPE", match.str() });
                     else tokens.push_back({ rule.type, match.str() });
                 }
                 cursor += match.length();

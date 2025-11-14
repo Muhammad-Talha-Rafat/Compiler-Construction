@@ -3,7 +3,7 @@
 #include "Tokenizer.h"
 #include "AST.h"
 #include "Parser.h"
-//#include "ScopeAnalyzer.h"
+#include "ScopeAnalyzer.h"
 using namespace std;
 
 
@@ -17,10 +17,11 @@ int main() {
 
     Parser parser(tokens);
     Node* root = parser.parse();
-    root->print();
+    //root->print();
 
-    //ScopeAnalyzer analyser;
-    //analyser.analyse();
+    ScopeAnalyzer analyser;
+    analyser.analyse(root);
+    analyser.print();
 
     return 0;
 }

@@ -36,6 +36,20 @@ struct Node {
                 child->print(depth + 1);
     }
 
+    string getValue(const string& _type) {
+        for (auto* child : this->children)
+            if (child->children.empty() && child->type == _type)
+                return child->value;
+        return "";
+    }
+
+    Node* getNode(const string& _type) {
+        for (auto* child : this->children)
+            if (!child->children.empty() && child->type == _type && child->value.empty())
+                return child;
+        return nullptr;
+    }
+
     ~Node() {
         for (auto* c : children)
             delete c;
