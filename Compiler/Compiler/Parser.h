@@ -9,7 +9,7 @@ using namespace std;
 
 
 runtime_error UnexpectedEOF() {
-	return runtime_error("UnexpectedEOF: end of code was not expected");
+	return runtime_error("\033[0;31mUnexpectedEOF\033[0m: end of code was not expected");
 }
 
 runtime_error UnexpectedToken(const string& expected, const token& encountered) {
@@ -18,50 +18,50 @@ runtime_error UnexpectedToken(const string& expected, const token& encountered) 
 	else value = "\"" + expected + "\"";
 	if (encountered.type == "UNDEFINED") {
 		string undefined = encountered.value == "\"" ? "\\\"" : encountered.value;
-		return runtime_error("UnexpectedToken: expected a " + value + ", got \"" + undefined + "\"");
+		return runtime_error("\033[0;31mUnexpectedToken\033[0m: expected a " + value + ", got \"" + undefined + "\"");
 	}
-	return runtime_error("UnexpectedToken: expected " + value + ", got \"" + encountered.type + "\"");
+	return runtime_error("\033[0;31mUnexpectedToken\033[0m: expected " + value + ", got \"" + encountered.type + "\"");
 }
 
 runtime_error ExpectedIdentifier(const string& encountered) {
-	return runtime_error("ExpectedIdentifier: expected an <IDENTIFIER> but \"" + encountered + "\" identified");
+	return runtime_error("\033[0;31mExpectedIdentifier\033[0m: expected an <IDENTIFIER> but \"" + encountered + "\" identified");
 }
 
 runtime_error UndefinedToken(const string& encountered) {
-	if (encountered == "\"") return runtime_error("UndefinedToken: \"\\" + encountered + "\" found");
-	else return runtime_error("UndefinedToken: \"" + encountered + "\" found");
+	if (encountered == "\"") return runtime_error("\033[0;31mUndefinedToken\033[0m: \"\\" + encountered + "\" found");
+	else return runtime_error("\033[0;31mUndefinedToken\033[0m: \"" + encountered + "\" found");
 }
 
 runtime_error ExpectedTypeToken() {
-	return runtime_error("ExpectedTypeToken: unable to find data type");
+	return runtime_error("\033[0;31mExpectedTypeToken\033[0m: unable to find data type");
 }
 
 runtime_error ExpectedIntLit(const string& type) {
-	return runtime_error("ExpectedIntLit: expected an integer value for type <" + type + ">");
+	return runtime_error("\033[0;31mExpectedIntLit\033[0m: expected an integer value for type <" + type + ">");
 }
 
 runtime_error ExpectedFloatLit(const string& type) {
-	return runtime_error("ExpectedFloatLit: expected a float value for type <" + type + ">");
+	return runtime_error("\033[0;31mExpectedFloatLit\033[0m: expected a float value for type <" + type + ">");
 }
 
 runtime_error ExpectedStringLit(const string& type) {
-	return runtime_error("ExpectedStringLit: expected a string literal for type <" + type + ">");
+	return runtime_error("\033[0;31mExpectedStringLit\033[0m: expected a string literal for type <" + type + ">");
 }
 
 runtime_error ExpectedCharacterLit(const string& type) {
-	return runtime_error("ExpectedCharacterLit: expected a character for type <" + type + ">");
+	return runtime_error("\033[0;31mExpectedCharacterLit\033[0m: expected a character for type <" + type + ">");
 }
 
 runtime_error ExpectedBooleanValue(const string& type) {
-	return runtime_error("ExpectedBooleanValue: expected a bool value for type <" + type + ">");
+	return runtime_error("\033[0;31mExpectedBooleanValue\033[0m: expected a bool value for type <" + type + ">");
 }
 
 runtime_error ExpectedExpression() {
-	return runtime_error("ExpectedExpression: an expression was expected here");
+	return runtime_error("\033[0;31mExpectedExpression\033[0m: an expression was expected here");
 }
 
 runtime_error SyntaxError(const string& message) {
-	return runtime_error("Syntax error: " + message);
+	return runtime_error("\033[1;31mSyntax error\033[0m: " + message);
 }
 
 
@@ -156,7 +156,6 @@ public:
 
 
 
-#include "AST.h"
 #include "ParseHeader.h"
 #include "ParseDeclaration.h"
 #include "ParseObject.h"

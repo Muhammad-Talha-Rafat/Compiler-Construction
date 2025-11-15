@@ -49,27 +49,30 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 			Node* statements_node = parse_statements();
 
-			if ((statements_node && !statements_node->children.empty() && statements_node->children.back()->type == "error") || statements_node->type == "error") {
-				_block->children.push_back(statements_node);
-				_function->children.push_back(_block);
-				return _function;
-			}
+			if (statements_node) {
 
-			if (statements_node)
-				_block->children.push_back(statements_node);
+				if ((!statements_node->children.empty() && statements_node->children.back()->type == "error") || statements_node->type == "error") {
+					_block->children.push_back(statements_node);
+					_function->children.push_back(_block);
+					return _function;
+				}
 
-			if (statements_node->type == "return")
-				return_trigger = true;
+				if (statements_node)
+					_block->children.push_back(statements_node);
 
-			if (cursor < tokens.size() && peek().value == "return") {
-				if (type == "void")
-					throw SyntaxError("\"void\" function can not return");
+				if (statements_node->type == "return")
+					return_trigger = true;
 
-				Node* return_node = parse_return();
-				if (return_node)
-					_block->children.push_back(return_node);
+				if (cursor < tokens.size() && peek().value == "return") {
+					if (type == "void")
+						throw SyntaxError("\"void\" function can not return");
 
-				return_trigger = true;
+					Node* return_node = parse_return();
+					if (return_node)
+						_block->children.push_back(return_node);
+
+					return_trigger = true;
+				}
 			}
 		}
 

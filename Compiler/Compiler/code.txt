@@ -1,35 +1,87 @@
 #include <iostream>
+#include "header.h"
 using namespace std;
 
-//#define SIZE 10
+// Global variables
+int globalCounter = 0;
+float PI = 3.14;
 
-int number = 5;
+int MAX_SIZE = 7; // (resolved)
 
-int sum(int a, int b) {
-    int c = a + b;
-    return c;
+int calculate(int x, int y, int z) {  // ERROR: parameter 'x' redeclared (resolved)
+    int result = x + y + z;  // ERROR: 'z' undeclared (resolved)
+    return result;
 }
 
-void display(int x) {
-    cout << x;
+
+int calculateIt(int a, int b) {  // ERROR: function 'calculate' redefined (resolved)
+    return a * b;
+}
+
+void processData(int num) {
+    int local = num * 2;
+    
+    for (int i = 0; i < 10; i++) {
+        int temp = i + local;
+        int _temp = i * 2;  // ERROR: 'temp' redeclared in same scope (resolved)
+        
+        if (temp > 5) {
+            int inner = temp + globalCounter;
+            cout << inner;
+        }
+        
+        // cout << inner;  // ERROR: 'inner' undeclared (out of scope) (resolved)
+    }
+    
+    // cout << temp;  // ERROR: 'temp' undeclared (out of scope) (resolved)
+}
+
+void testLoops() {
+    int x = 10;
+    
+    while (x > 0) {
+        int counter = x;
+        x = x - 1;
+        cout << counter;  // ERROR: 'counter' undeclared (out of scope) (resolved)
+    }
+    
+    
+    do {
+        int y = 5;
+        int sum = sum + y;  // ERROR: 'sum' undeclared (resolved)
+    } while (y < 10);  // ERROR: 'y' undeclared (out of scope) (resolved)
 }
 
 int main() {
-    int a = 10;
-    int b = 20;
-    int a = 7;
-
-    for(int i = 0; i < 5; i = i + 1) {
-        int d = i * 2;
-    }
-
+    int a = 5;
+    int b = 10;
+    int c = 15;  // ERROR: 'a' redeclared (resolved)
+    
+    calculate(a, b);
+    processData(a);
+    
+    int result = calculate(a, b, 20);
+    
+    processData(100);  // ERROR: 'mystery' undefined function (resolved)
+    
     if (a < b) {
         int z = a + b;
-    } else if (b < SIZE) {
-        int y = number;
+        processData(z);  // ERROR: 'display' undefined function (resolved)
+    } else if (b < MAX_SIZE) {  // ERROR: 'MAX_SIZE' undeclared (resolved)
+        int w = PI * 2;
     } else {
-        int w = 100;
+        int v = unknownVar;  // ERROR: 'unknownVar' undeclared (resolved)
     }
-
+    
+    for (int i = 0; i < 5; i++) {
+        if (i == 2) {
+            int k = i;
+            cout << k;  // ERROR: 'k' undeclared (out of scope) (resolved)
+        }
+    }
+    
+    int x;
+    x = 100;
+    
     return 0;
 }

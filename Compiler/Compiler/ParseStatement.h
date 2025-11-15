@@ -277,8 +277,10 @@ Node* Parser::parse_statements() {
 
 				while (peek().type != "rBRACE") {
 					_block->children.push_back(parse_statements());
-					if (!_block->children.empty() && _block->children.back()->type == "error")
+					if (!_block->children.empty() && _block->children.back()->type == "error") {
+						_for_loop->children.push_back(_block);
 						throw runtime_error(_block->children.back()->value);
+					}
 				}
 
 				if (!_block->children.empty())
@@ -317,8 +319,10 @@ Node* Parser::parse_statements() {
 
 				while (peek().type != "rBRACE") {
 					_block->children.push_back(parse_statements());
-					if (_block->children.empty() && _block->children.back()->type == "error")
+					if (_block->children.empty() && _block->children.back()->type == "error") {
+						_while_loop->children.push_back(_block);
 						throw runtime_error(_block->children.back()->value);
+					}
 				}
 
 				if (!_block->children.empty())
@@ -351,8 +355,10 @@ Node* Parser::parse_statements() {
 
 				while (peek().type != "rBRACE") {
 					_block->children.push_back(parse_statements());
-					if (_block->children.empty() && _block->children.back()->type == "error")
+					if (!_block->children.empty() && _block->children.back()->type == "error") {
+						_do_while_loop->children.push_back(_block);
 						throw runtime_error(_block->children.back()->value);
+					}
 				}
 
 				if (!_block->children.empty())
@@ -384,34 +390,37 @@ Node* Parser::parse_statements() {
 
 			try {
 
-				Node* _if_block = new Node("if_block");
+				Node* _if = new Node("if_block");
 
-				_if_block->children.push_back(new Node(expectValue("if")));
-				_if_block->children.push_back(new Node(expectType("lPARENTHESIS")));
+				_if->children.push_back(new Node(expectValue("if")));
+				_if->children.push_back(new Node(expectType("lPARENTHESIS")));
 
 				Node* conditions_node = parse_conditions();
 				if (conditions_node)
-					_if_block->children.push_back(conditions_node);
+					_if->children.push_back(conditions_node);
 
-				_if_block->children.push_back(new Node(expectType("rPARENTHESIS")));
-				_if_block->children.push_back(new Node(expectType("lBRACE")));
+				_if->children.push_back(new Node(expectType("rPARENTHESIS")));
+				_if->children.push_back(new Node(expectType("lBRACE")));
 
 				// block
 
-				Node* _block = new Node("block");
+				Node* _if_block = new Node("block");
 
 				while (peek().type != "rBRACE") {
-					_block->children.push_back(parse_statements());
-					if (_block->children.empty() && _block->children.back()->type == "error")
-						throw runtime_error(_block->children.back()->value);
+					_if_block->children.push_back(parse_statements());
+					if (!_if_block->children.empty() && _if_block->children.back()->type == "error") {
+						_if->children.push_back(_if_block);
+						_decision->children.push_back(_if);
+						throw runtime_error(_if_block->children.back()->value);
+					}
 				}
 
-				if (!_block->children.empty())
-					_if_block->children.push_back(_block);
+				if (!_if_block->children.empty())
+					_if->children.push_back(_if_block);
 
-				_if_block->children.push_back(new Node(expectType("rBRACE")));
+				_if->children.push_back(new Node(expectType("rBRACE")));
 
-				_decision->children.push_back(_if_block);
+				_decision->children.push_back(_if);
 
 				// handle "else if" and "else"
 
@@ -419,17 +428,17 @@ Node* Parser::parse_statements() {
 
 					if (peek().value == "else if") {
 
-						Node* _else_if_block = new Node("else_if_block");
+						Node* _else_if = new Node("else_if_block");
 
-						_else_if_block->children.push_back(new Node(expectValue("else if")));
-						_else_if_block->children.push_back(new Node(expectType("lPARENTHESIS")));
+						_else_if->children.push_back(new Node(expectValue("else if")));
+						_else_if->children.push_back(new Node(expectType("lPARENTHESIS")));
 
 						Node* conditions_node = parse_conditions();
 						if (conditions_node)
-							_else_if_block->children.push_back(conditions_node);
+							_else_if->children.push_back(conditions_node);
 
-						_else_if_block->children.push_back(new Node(expectType("rPARENTHESIS")));
-						_else_if_block->children.push_back(new Node(expectType("lBRACE")));
+						_else_if->children.push_back(new Node(expectType("rPARENTHESIS")));
+						_else_if->children.push_back(new Node(expectType("lBRACE")));
 
 						// block
 
@@ -437,22 +446,25 @@ Node* Parser::parse_statements() {
 
 						while (peek().type != "rBRACE") {
 							else_if_block->children.push_back(parse_statements());
-							if (else_if_block->children.empty() && else_if_block->children.back()->type == "error")
+							if (else_if_block->children.empty() && else_if_block->children.back()->type == "error")  {
+								_else_if->children.push_back(else_if_block);
+								_decision->children.push_back(_else_if);
 								throw runtime_error(else_if_block->children.back()->value);
+							}
 						}
 
 						if (!else_if_block->children.empty())
-							_else_if_block->children.push_back(else_if_block);
+							_else_if->children.push_back(else_if_block);
 
-						_else_if_block->children.push_back(new Node(expectType("rBRACE")));
+						_else_if->children.push_back(new Node(expectType("rBRACE")));
 
-						_decision->children.push_back(_else_if_block);
+						_decision->children.push_back(_else_if);
 					}
 					else {
-						Node* _else_block = new Node("else_block");
+						Node* _else = new Node("else_block");
 
-						_else_block->children.push_back(new Node(expectValue("else")));
-						_else_block->children.push_back(new Node(expectType("lBRACE")));
+						_else->children.push_back(new Node(expectValue("else")));
+						_else->children.push_back(new Node(expectType("lBRACE")));
 
 						// block
 
@@ -460,16 +472,19 @@ Node* Parser::parse_statements() {
 
 						while (peek().type != "rBRACE") {
 							else_block->children.push_back(parse_statements());
-							if (else_block->children.empty() && else_block->children.back()->type == "error")
+							if (!else_block->children.empty() && else_block->children.back()->type == "error") {
+								_else->children.push_back(else_block);
+								_decision->children.push_back(_else);
 								throw runtime_error(else_block->children.back()->value);
+							}
 						}
 
 						if (!else_block->children.empty())
-							_else_block->children.push_back(else_block);
+							_else->children.push_back(else_block);
 
-						_else_block->children.push_back(new Node(expectType("rBRACE")));
+						_else->children.push_back(new Node(expectType("rBRACE")));
 
-						_decision->children.push_back(_else_block);
+						_decision->children.push_back(_else);
 
 						break;
 					}

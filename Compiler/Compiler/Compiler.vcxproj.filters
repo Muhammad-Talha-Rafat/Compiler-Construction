@@ -64,10 +64,10 @@
     <ClInclude Include="ParseStatement.h">
       <Filter>Header Files\Regex\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="ScopeAnalyzer.h">
+    <ClInclude Include="ScopeAnalyser.h">
       <Filter>Header Files\Regex\Scope Analysis</Filter>
     </ClInclude>
-    <ClInclude Include="AST.h">
+    <ClInclude Include="Structs.h">
       <Filter>Header Files\Regex</Filter>
     </ClInclude>
     <ClInclude Include="ParseHeader.h">

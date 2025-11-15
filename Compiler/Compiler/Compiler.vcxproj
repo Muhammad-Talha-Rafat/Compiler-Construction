@@ -131,7 +131,7 @@
     <Text Include="Grammer.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AST.h" />
+    <ClInclude Include="Structs.h" />
     <ClInclude Include="noRegex.h" />
     <ClInclude Include="ParseDeclaration.h" />
     <ClInclude Include="ParseFunction.h" />
@@ -139,7 +139,7 @@
     <ClInclude Include="ParseObject.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ParseStatement.h" />
-    <ClInclude Include="ScopeAnalyzer.h" />
+    <ClInclude Include="ScopeAnalyser.h" />
     <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
