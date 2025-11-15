@@ -2,11 +2,11 @@
 #include "header.h"
 using namespace std;
 
+#define MAX_SIZE 7 // (resolved)
+
 // Global variables
 int globalCounter = 0;
 float PI = 3.14;
-
-#define MAX_SIZE 7 // (resolved)
 
 int calculate(int x, int y, int z) {  // ERROR: parameter 'x' redeclared (resolved)
     int result = x + y + z;  // ERROR: 'z' undeclared (resolved)
