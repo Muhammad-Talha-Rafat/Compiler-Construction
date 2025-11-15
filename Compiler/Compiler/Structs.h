@@ -3,6 +3,8 @@
 #include <vector>
 using namespace std;
 
+
+
 struct Node {
 
     string type;
@@ -52,8 +54,6 @@ struct Node {
                 return child;
         return nullptr;
     }
-
-
  
     ~Node() {
         for (auto child : children)
@@ -61,6 +61,8 @@ struct Node {
     }
 
 };
+
+
 
 enum ScopeError {
     none,
@@ -70,6 +72,8 @@ enum ScopeError {
     FunctionRedefinition
 };
 
+
+
 enum Context {
     variable,
     function,
@@ -78,12 +82,16 @@ enum Context {
     error
 };
 
+
+
 struct Symbol {
     string name;
     string type;
     Context context;
     ScopeError error;
 };
+
+
 
 struct Scope {
 
@@ -97,27 +105,25 @@ struct Scope {
         printScope(this, 0);
     }
 
-    // NEW: Helper function to check if scope has any content recursively
-    bool hasContent(Scope* _scope) {
-        if (!_scope) return false;
+    bool isEmpty(Scope* _scope) {
+        if (!_scope)
+            return true;
 
-        // If this scope has symbols, it has content
-        if (!_scope->symbols.empty()) return true;
+        if (!_scope->symbols.empty())
+            return false;
 
-        // Check if any child has content
-        for (auto child : _scope->children) {
-            if (hasContent(child)) return true;
-        }
+        for (auto child : _scope->children)
+            if (!isEmpty(child))
+                return false;
 
-        return false;
+        return true;
     }
 
     void printScope(Scope* _scope, int indent) {
 
         if (!_scope) return;
 
-        // NEW: Skip if this scope has no content (recursively)
-        if (!hasContent(_scope)) return;
+        if (isEmpty(_scope)) return;
 
         string spacing(indent * 2, ' ');
         cout << spacing << "[\033[0;90m" << _scope->name << "\033[0m]\n";
@@ -139,9 +145,9 @@ struct Scope {
         }
         cout << endl;
 
-        for (auto child : _scope->children) {
+        for (auto child : _scope->children)
             printScope(child, indent + 1);
-        }
+
     }
 
 };

@@ -7,62 +7,81 @@
 using namespace std;
 
 
+namespace ParseError {
 
-runtime_error UnexpectedEOF() {
-	return runtime_error("\033[0;31mUnexpectedEOF\033[0m: end of code was not expected");
-}
-
-runtime_error UnexpectedToken(const string& expected, const token& encountered) {
-	string value;
-	if (expected == "value" || expected == "type" || expected == "declaration") value = expected;
-	else value = "\"" + expected + "\"";
-	if (encountered.type == "UNDEFINED") {
-		string undefined = encountered.value == "\"" ? "\\\"" : encountered.value;
-		return runtime_error("\033[0;31mUnexpectedToken\033[0m: expected a " + value + ", got \"" + undefined + "\"");
+	runtime_error UnexpectedEOF() {
+		return runtime_error("\033[0;31mUnexpectedEOF\033[0m: end of code was not expected");
 	}
-	return runtime_error("\033[0;31mUnexpectedToken\033[0m: expected " + value + ", got \"" + encountered.type + "\"");
+
+	runtime_error UnexpectedToken(const string& expected, const token& encountered) {
+		string value;
+		if (expected == "value" || expected == "type" || expected == "declaration") value = expected;
+		else value = "\"" + expected + "\"";
+		if (encountered.type == "UNDEFINED") {
+			string undefined = encountered.value == "\"" ? "\\\"" : encountered.value;
+			return runtime_error("\033[0;31mUnexpectedToken\033[0m: expected a " + value + ", got \"" + undefined + "\"");
+		}
+		return runtime_error("\033[0;31mUnexpectedToken\033[0m: expected " + value + ", got \"" + encountered.type + "\"");
+	}
+
+	runtime_error ExpectedIdentifier(const string& encountered) {
+		return runtime_error("\033[0;31mExpectedIdentifier\033[0m: expected an <IDENTIFIER> but \"" + encountered + "\" identified");
+	}
+
+	runtime_error UndefinedToken(const string& encountered) {
+		if (encountered == "\"") return runtime_error("\033[0;31mUndefinedToken\033[0m: \"\\" + encountered + "\" found");
+		else return runtime_error("\033[0;31mUndefinedToken\033[0m: \"" + encountered + "\" found");
+	}
+
+	runtime_error ExpectedTypeToken() {
+		return runtime_error("\033[0;31mExpectedTypeToken\033[0m: unable to find data type");
+	}
+
+	runtime_error ExpectedIntLit(const string& type) {
+		return runtime_error("\033[0;31mExpectedIntLit\033[0m: expected an integer value for type <" + type + ">");
+	}
+
+	runtime_error ExpectedFloatLit(const string& type) {
+		return runtime_error("\033[0;31mExpectedFloatLit\033[0m: expected a float value for type <" + type + ">");
+	}
+
+	runtime_error ExpectedStringLit(const string& type) {
+		return runtime_error("\033[0;31mExpectedStringLit\033[0m: expected a string literal for type <" + type + ">");
+	}
+
+	runtime_error ExpectedCharacterLit(const string& type) {
+		return runtime_error("\033[0;31mExpectedCharacterLit\033[0m: expected a character for type <" + type + ">");
+	}
+
+	runtime_error ExpectedBooleanValue(const string& type) {
+		return runtime_error("\033[0;31mExpectedBooleanValue\033[0m: expected a bool value for type <" + type + ">");
+	}
+
+	runtime_error ExpectedExpression() {
+		return runtime_error("\033[0;31mExpectedExpression\033[0m: an expression was expected here");
+	}
+
+	runtime_error SyntaxError(const string& message) {
+		return runtime_error("\033[1;31mSyntax error\033[0m: " + message);
+	}
+
 }
 
-runtime_error ExpectedIdentifier(const string& encountered) {
-	return runtime_error("\033[0;31mExpectedIdentifier\033[0m: expected an <IDENTIFIER> but \"" + encountered + "\" identified");
+
+bool hasParseError(Node* root) {
+	Node* temp = root;
+	while (temp && !temp->children.empty()) {
+		temp = temp->children.back();
+	}
+	if (temp && temp->type == "error") {
+		cout << "[\033[1;31mCritical\033[0m] Unfortunately an error has been encountered during parsing"
+			<< "\ncannot do scope analysis, print the AST to further information\n";
+		return true;
+	}
+	else return false;
 }
 
-runtime_error UndefinedToken(const string& encountered) {
-	if (encountered == "\"") return runtime_error("\033[0;31mUndefinedToken\033[0m: \"\\" + encountered + "\" found");
-	else return runtime_error("\033[0;31mUndefinedToken\033[0m: \"" + encountered + "\" found");
-}
 
-runtime_error ExpectedTypeToken() {
-	return runtime_error("\033[0;31mExpectedTypeToken\033[0m: unable to find data type");
-}
-
-runtime_error ExpectedIntLit(const string& type) {
-	return runtime_error("\033[0;31mExpectedIntLit\033[0m: expected an integer value for type <" + type + ">");
-}
-
-runtime_error ExpectedFloatLit(const string& type) {
-	return runtime_error("\033[0;31mExpectedFloatLit\033[0m: expected a float value for type <" + type + ">");
-}
-
-runtime_error ExpectedStringLit(const string& type) {
-	return runtime_error("\033[0;31mExpectedStringLit\033[0m: expected a string literal for type <" + type + ">");
-}
-
-runtime_error ExpectedCharacterLit(const string& type) {
-	return runtime_error("\033[0;31mExpectedCharacterLit\033[0m: expected a character for type <" + type + ">");
-}
-
-runtime_error ExpectedBooleanValue(const string& type) {
-	return runtime_error("\033[0;31mExpectedBooleanValue\033[0m: expected a bool value for type <" + type + ">");
-}
-
-runtime_error ExpectedExpression() {
-	return runtime_error("\033[0;31mExpectedExpression\033[0m: an expression was expected here");
-}
-
-runtime_error SyntaxError(const string& message) {
-	return runtime_error("\033[1;31mSyntax error\033[0m: " + message);
-}
 
 
 class Parser
@@ -76,31 +95,31 @@ private:
 	token peek(int offset = 0) const {
 		if (cursor + offset < tokens.size())
 			return tokens[cursor + offset];
-		else throw UnexpectedEOF();
+		else throw ParseError::UnexpectedEOF();
 	}
 
 	token consume() {
 		if (cursor < tokens.size())
 			return tokens[cursor++];
-		else throw UnexpectedEOF();
+		else throw ParseError::UnexpectedEOF();
 	}
 
 	token expectType(const string& expected) {
 		if (peek().type == expected)
 			return consume();
-		else throw UnexpectedToken(expected, peek());
+		else throw ParseError::UnexpectedToken(expected, peek());
 	}
 
 	token expectValue(const string& expected) {
 		if (peek().value == expected)
 			return consume();
-		else throw UnexpectedToken(expected, peek());
+		else throw ParseError::UnexpectedToken(expected, peek());
 	}
 
 	void ignore() {
 		if (cursor < tokens.size())
 			cursor++;
-		else throw UnexpectedEOF();
+		else throw ParseError::UnexpectedEOF();
 	}
 
 
@@ -177,7 +196,7 @@ Node* Parser::parse() {
 			root->children.push_back(declarations_node);
 
 		if (!main_trigger)
-			throw SyntaxError("program is missing the \"main\" function");
+			throw ParseError::SyntaxError("program is missing the \"main\" function");
 	}
 	catch (const runtime_error& e) {
 		root->children.push_back(new Node("error", e.what()));

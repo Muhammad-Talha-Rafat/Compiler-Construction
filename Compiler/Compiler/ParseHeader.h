@@ -34,7 +34,7 @@ Node* Parser::parse_header() {
 
 			if (peek().type == "LIBRARY" || peek().type == "HEADER")
 				_header->children.push_back(new Node(consume())); // LIBRARY / HEADER
-			else throw UnexpectedToken("LIBRARY\" or \"HEADER", peek());
+			else throw ParseError::UnexpectedToken("LIBRARY\" or \"HEADER", peek());
 
 		}
 		else if (peek().value == "using") {

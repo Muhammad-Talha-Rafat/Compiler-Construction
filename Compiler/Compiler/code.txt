@@ -6,7 +6,7 @@ using namespace std;
 int globalCounter = 0;
 float PI = 3.14;
 
-int MAX_SIZE = 7; // (resolved)
+#define MAX_SIZE 7 // (resolved)
 
 int calculate(int x, int y, int z) {  // ERROR: parameter 'x' redeclared (resolved)
     int result = x + y + z;  // ERROR: 'z' undeclared (resolved)
@@ -49,7 +49,7 @@ void testLoops() {
     do {
         int y = 5;
         int sum = sum + y;  // ERROR: 'sum' undeclared (resolved)
-    } while (y < 10);  // ERROR: 'y' undeclared (out of scope) (resolved)
+    } while (x < 10);  // ERROR: 'y' undeclared (out of scope) (resolved)
 }
 
 int main() {
@@ -70,7 +70,7 @@ int main() {
     } else if (b < MAX_SIZE) {  // ERROR: 'MAX_SIZE' undeclared (resolved)
         int w = PI * 2;
     } else {
-        int v = unknownVar;  // ERROR: 'unknownVar' undeclared (resolved)
+        int v = 0;  // ERROR: 'unknownVar' undeclared (resolved)
     }
     
     for (int i = 0; i < 5; i++) {
@@ -80,6 +80,9 @@ int main() {
         }
     }
     
+
+
+
     int x;
     x = 100;
     

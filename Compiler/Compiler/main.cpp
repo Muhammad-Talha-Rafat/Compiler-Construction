@@ -1,5 +1,4 @@
-﻿#include <iostream>
-#include <vector>
+﻿#include <vector>
 #include "Tokenizer.h"
 #include "Structs.h"
 #include "Parser.h"
@@ -7,18 +6,7 @@
 using namespace std;
 
 
-bool hasParsingError(Node* root) {
-    Node* temp = root;
-    while (temp && !temp->children.empty()) {
-        temp = temp->children.back();
-    }
-    if (temp && temp->type == "error") {
-        cout << "[\033[1;31mCritical\033[0m] Unfortunately an error has been encountered during parsing"
-            << "\ncannot do scope analysis, print the AST to further information\n";
-        return true;
-    }
-    else return false;
-}
+
 
 int main() {
 
@@ -31,7 +19,7 @@ int main() {
     Node* root = parser.parse();
     //root->print();
 
-    if (!hasParsingError(root)) {
+    if (!hasParseError(root)) {
         ScopeAnalyser analyser(root);
         Scope* scope = analyser.getScopeTable();
         scope->print();

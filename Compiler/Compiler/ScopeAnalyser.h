@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <vector>
-#include <iomanip>
 using namespace std;
+
 
 
 class ScopeAnalyser {
@@ -58,6 +58,16 @@ Scope* ScopeAnalyser::getScopeTable() {
 void ScopeAnalyser::analyse(Node* _tree) {
 
 	if (!_tree) return;
+
+	if (_tree->type == "define") {
+		Symbol _define;
+		_define.name = _tree->getValue("IDENTIFIER");
+		_define.type = "MACRO";
+		_define.context = Context::variable;
+		add(_define);
+
+		return;
+	}
 
 	if (_tree->type == "function") {
 
@@ -349,6 +359,8 @@ void ScopeAnalyser::deleteScope(Scope* _scope) {
 		deleteScope(child);
 	delete _scope;
 }
+
+
 
 
 /*

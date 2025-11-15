@@ -23,7 +23,7 @@ Node* Parser::parse_declarations() {
 					offset++;
 
 					if (!types.count(peek(offset).value) && peek(offset).value != "void")
-						throw ExpectedTypeToken();
+						throw ParseError::ExpectedTypeToken();
 				}
 
 
@@ -37,13 +37,13 @@ Node* Parser::parse_declarations() {
 						string name = peek(offset + 1).value;
 
 						if (main_trigger && name == "main")
-							throw SyntaxError("\"main\" function already exists");
+							throw ParseError::SyntaxError("\"main\" function already exists");
 
 
 						if (type == "int" && name == "main")
 							main_trigger = true;
 						else if (type != "int" && name == "main")
-							throw SyntaxError("\"main\" function can only be type \"int\"");
+							throw ParseError::SyntaxError("\"main\" function can only be type \"int\"");
 
 						Node* function_node = parse_function(type, name);
 
@@ -67,9 +67,9 @@ Node* Parser::parse_declarations() {
 
 						_declarations->children.push_back(variable_node);
 					}
-					else throw SyntaxError("expected a declaration but \"" + peek(offset + 2).type + "\" encountered");
+					else throw ParseError::SyntaxError("expected a declaration but \"" + peek(offset + 2).type + "\" encountered");
 				}
-				else throw SyntaxError("invalid declaration starting with \"" + peek().value + "\"");
+				else throw ParseError::SyntaxError("invalid declaration starting with \"" + peek().value + "\"");
 			}
 
 			else if (peek().value == "class" || peek().value == "struct") {
@@ -84,7 +84,7 @@ Node* Parser::parse_declarations() {
 
 				_declarations->children.push_back(object_node);
 			}
-			else throw SyntaxError("invalid token \"" + peek().value + "\" to start a declaration");
+			else throw ParseError::SyntaxError("invalid token \"" + peek().value + "\" to start a declaration");
 		}
 	}
 	catch (const runtime_error& e) {
@@ -110,7 +110,7 @@ Node* Parser::parse_define() {
 
 		if (literals.count(peek().type) || literals.count(peek().value))
 			_define->children.push_back(new Node(consume()));
-		else throw UnexpectedToken("value", peek());
+		else throw ParseError::UnexpectedToken("value", peek());
 
 	}
 	catch (const runtime_error& e) {
@@ -133,12 +133,12 @@ Node* Parser::parse_variable() {
 			_variable->children.push_back(new Node(consume()));
 
 		if (!types.count(peek().value))
-			throw ExpectedTypeToken();
+			throw ParseError::ExpectedTypeToken();
 
 		_variable->children.push_back(new Node(consume()));						// type
 
 		if (_variable->children.front()->value == "void" || (_variable->children.size() > 1 && _variable->children[1]->value == "void"))
-			throw SyntaxError("variables can't have type \"void\"");
+			throw ParseError::SyntaxError("variables can't have type \"void\"");
 
 		_variable->children.push_back(new Node(expectType("IDENTIFIER")));		// IDENTIFIER
 
@@ -156,7 +156,7 @@ Node* Parser::parse_variable() {
 			_variable->children.push_back(new Node(consume()));					// IDENTIFIER
 		}
 		else if (peek().type != "SEMICOLON") {
-			_variable->children.push_back(new Node("error", UnexpectedToken("ASSIGN", peek()).what()));
+			_variable->children.push_back(new Node("error", ParseError::UnexpectedToken("ASSIGN", peek()).what()));
 			return _variable;
 		}
 
@@ -164,7 +164,7 @@ Node* Parser::parse_variable() {
 		if ((_variable->children[0]->value == "const" || _variable->children[0]->value == "static") && !assigned)
 			_variable->children.push_back(new Node("error", "Runtime error: const/static variable must have a value"));
 
-		_variable->children.push_back(new Node(expectType("SEMICOLON")));						// SEMICOLON
+		_variable->children.push_back(new Node(expectType("SEMICOLON")));		// SEMICOLON
 	}
 	catch (const runtime_error& e) {
 		_variable->children.push_back(new Node("error", e.what()));
@@ -234,7 +234,7 @@ Node* Parser::parse_term() {
 Node* Parser::parse_factor() {
 
 	if (cursor >= tokens.size())
-		return new Node("error", UnexpectedEOF().what());
+		return new Node("error", ParseError::UnexpectedEOF().what());
 
 	// parenthesis enclosed expressions
 	if (peek().type == "lPARENTHESIS") {
@@ -273,13 +273,13 @@ Node* Parser::parse_factor() {
 	// literal
 	if (literals.count(peek().type) || peek().value == "true" || peek().value == "false") {
 		if (cursor + 1 < tokens.size() && peek(1).type == "IDENTIFIER")
-			return new Node("error", SyntaxError("expected an operator but \"" + peek(1).type + "\" encountered").what());
+			return new Node("error", ParseError::SyntaxError("expected an operator but \"" + peek(1).type + "\" encountered").what());
 
 		return new Node(consume());
 	}
 
 	// unexpected token
-	return new Node("error", UnexpectedToken("expression", peek()).what());
+	return new Node("error", ParseError::UnexpectedToken("expression", peek()).what());
 }
 
 
@@ -338,7 +338,7 @@ Node* Parser::parse_arguments() {
 			if (peek().type == "COMMA")
 				_arguments->children.push_back(new Node(consume()));
 			else if (peek().type != "rPARENTHESIS") {
-				_arguments->children.push_back(new Node("error", UnexpectedToken("rPARENTHESIS", peek()).what()));
+				_arguments->children.push_back(new Node("error", ParseError::UnexpectedToken("rPARENTHESIS", peek()).what()));
 				break;
 			}
 		}

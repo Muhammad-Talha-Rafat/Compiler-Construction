@@ -12,10 +12,10 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 		if (peek().value == "const" || peek().value == "static") {
 			if (type == "void")
-				throw SyntaxError("\"void\" function can't be '" + peek().value + "'");
+				throw ParseError::SyntaxError("\"void\" function can't be '" + peek().value + "'");
 
 			if (type == "main")
-				throw SyntaxError("\"main\" function can't be '" + peek().value + "'");
+				throw ParseError::SyntaxError("\"main\" function can't be '" + peek().value + "'");
 
 			_function->children.push_back(new Node(consume()));
 		}
@@ -65,7 +65,7 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 				if (cursor < tokens.size() && peek().value == "return") {
 					if (type == "void")
-						throw SyntaxError("\"void\" function can not return");
+						throw ParseError::SyntaxError("\"void\" function can not return");
 
 					Node* return_node = parse_return();
 					if (return_node)
@@ -80,7 +80,7 @@ Node* Parser::parse_function(const string& type, const string& name) {
 			_function->children.push_back(_block);
 
 		if (name != "main" && type != "void" && !return_trigger)
-			throw SyntaxError("Missing \"return\" statement in non-void function");
+			throw ParseError::SyntaxError("Missing \"return\" statement in non-void function");
 
 		_function->children.push_back(new Node(expectType("rBRACE")));
 	}
@@ -98,7 +98,7 @@ Node* Parser::parse_parameters() {
 	Node* _parameter = new Node("parameter");
 
 	if (types.count(peek().value) == 0)
-		throw ExpectedTypeToken();
+		throw ParseError::ExpectedTypeToken();
 
 	_parameter->children.push_back(new Node(consume())); // type
 	_parameter->children.push_back(new Node(expectType("IDENTIFIER")));
