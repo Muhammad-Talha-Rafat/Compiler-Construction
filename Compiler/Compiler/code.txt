@@ -2,7 +2,6 @@
 #include "header.h"
 using namespace std;
 
-
 #define MAX_SIZE 7 // (resolved)
 
 // Global variables
