@@ -13,3 +13,4 @@ x64/
 *.exe
 *.ilk
 *.log
+Compiler/x64/Debug/
