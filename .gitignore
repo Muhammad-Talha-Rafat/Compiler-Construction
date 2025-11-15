@@ -4,3 +4,12 @@ obj/
 *.user
 *.suo
 *.db
+
+Debug/
+Release/
+x64/
+*.pdb
+*.obj
+*.exe
+*.ilk
+*.log
