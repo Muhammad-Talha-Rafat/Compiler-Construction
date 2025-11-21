@@ -3,8 +3,8 @@
 #include "Structs.h"
 #include "Parser.h"
 #include "ScopeAnalyser.h"
+#include "TypeChecker.h"
 using namespace std;
-
 
 
 
@@ -17,13 +17,19 @@ int main() {
 
     Parser parser(tokens);
     Node* root = parser.parse();
-    //root->print();
 
     if (!hasParseError(root)) {
         ScopeAnalyser analyser(root);
-        Scope* scope = analyser.getScopeTable();
-        scope->print();
+        Scope* scopeTable = analyser.getScopeTable();
+
+        if (!hasScopeWarnings(analyser)) {
+            TypeChecker checker(root, scopeTable);
+            checker.check();
+            root->print();
+        }
+        else scopeTable->print();
     }
+    else root->print();
 
     return 0;
 }

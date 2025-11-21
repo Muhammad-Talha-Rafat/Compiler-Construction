@@ -12,13 +12,22 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 		if (peek().value == "const" || peek().value == "static") {
 			if (type == "void")
-				throw ParseError::SyntaxError("\"void\" function can't be '" + peek().value + "'");
+				throw SyntaxError("\"void\" function can't be '" + peek().value + "'");
 
 			if (type == "main")
-				throw ParseError::SyntaxError("\"main\" function can't be '" + peek().value + "'");
+				throw SyntaxError("\"main\" function can't be '" + peek().value + "'");
 
+			_function->annotations.push_back(peek().value == "const" ? annotation::_const : annotation::_static);
 			_function->children.push_back(new Node(consume()));
 		}
+
+		if (peek().value == "int") _function->annotations.push_back(annotation::_int);
+		else if (peek().value == "float") _function->annotations.push_back(annotation::_float);
+		else if (peek().value == "double") _function->annotations.push_back(annotation::_double);
+		else if (peek().value == "char") _function->annotations.push_back(annotation::_char);
+		else if (peek().value == "string") _function->annotations.push_back(annotation::_string);
+		else if (peek().value == "bool") _function->annotations.push_back(annotation::_bool);
+		else if (peek().value == "void") _function->annotations.push_back(annotation::_void);
 
 		_function->children.push_back(new Node(consume()));		// type
 		_function->children.push_back(new Node(consume()));		// IDENTIFIER
@@ -26,6 +35,9 @@ Node* Parser::parse_function(const string& type, const string& name) {
 		_function->children.push_back(new Node(expectType("lPARENTHESIS")));
 
 		// validate parameters
+
+		if (peek().type != "rPARENTHESIS" && name == "main")
+			throw SyntaxError("\"main\" function can't have any parameters");
 
 		while (peek().type != "rPARENTHESIS") {
 
@@ -65,7 +77,7 @@ Node* Parser::parse_function(const string& type, const string& name) {
 
 				if (cursor < tokens.size() && peek().value == "return") {
 					if (type == "void")
-						throw ParseError::SyntaxError("\"void\" function can not return");
+						throw SyntaxError("\"void\" function can not return");
 
 					Node* return_node = parse_return();
 					if (return_node)
@@ -80,7 +92,7 @@ Node* Parser::parse_function(const string& type, const string& name) {
 			_function->children.push_back(_block);
 
 		if (name != "main" && type != "void" && !return_trigger)
-			throw ParseError::SyntaxError("Missing \"return\" statement in non-void function");
+			throw MissingReturn();
 
 		_function->children.push_back(new Node(expectType("rBRACE")));
 	}
@@ -97,8 +109,20 @@ Node* Parser::parse_parameters() {
 
 	Node* _parameter = new Node("parameter");
 
+	if (peek().value == "const" || peek().value == "static") {
+		_parameter->annotations.push_back(peek().value == "const" ? annotation::_const : annotation::_static);
+		_parameter->children.push_back(new Node(consume()));
+	}
+
 	if (types.count(peek().value) == 0)
-		throw ParseError::ExpectedTypeToken();
+		throw ExpectedTypeToken();
+
+	if (peek().value == "int") _parameter->annotations.push_back(annotation::_int);
+	else if (peek().value == "float") _parameter->annotations.push_back(annotation::_float);
+	else if (peek().value == "double") _parameter->annotations.push_back(annotation::_double);
+	else if (peek().value == "char") _parameter->annotations.push_back(annotation::_char);
+	else if (peek().value == "string") _parameter->annotations.push_back(annotation::_string);
+	else if (peek().value == "bool") _parameter->annotations.push_back(annotation::_bool);
 
 	_parameter->children.push_back(new Node(consume())); // type
 	_parameter->children.push_back(new Node(expectType("IDENTIFIER")));

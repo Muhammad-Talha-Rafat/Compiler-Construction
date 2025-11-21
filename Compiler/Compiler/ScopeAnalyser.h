@@ -17,7 +17,7 @@ private:
 	void analyse(Node* _tree);
 	void enter(const string& _scope);
 	void exit();
-	void add(const Symbol& _symbol);
+	void add(const Symbol& _symbol, Node* _node);
 	Symbol* lookup(const string& _name, Scope* _scope);
 	Scope* clone(const Scope* _root);
 	void deleteScope(Scope* _scope);
@@ -29,6 +29,7 @@ public:
 	~ScopeAnalyser();
 
 	Scope* getScopeTable();
+	int warnings = 0;
 
 };
 
@@ -62,9 +63,26 @@ void ScopeAnalyser::analyse(Node* _tree) {
 	if (_tree->type == "define") {
 		Symbol _define;
 		_define.name = _tree->getValue("IDENTIFIER");
-		_define.type = "MACRO";
+
+		for (Node* child : _tree->children) {
+			if (child->type == "INTEGER" ||
+				child->type == "DECIMAL" ||
+				child->type == "CHARACTER" ||
+				child->type == "STRLITERAL" ||
+				child->type == "BOOLEAN") {
+				_define.type = child->type;
+				break;
+			}
+		}
+
+		if (_define.type == "INTEGER") _define.type = "int";
+		else if (_define.type == "DECIMAL") _define.type = "float";
+		else if (_define.type == "CHARACTER") _define.type = "char";
+		else if (_define.type == "STRLITERAL") _define.type = "string";
+		else if (_define.type == "BOOLEAN") _define.type = "bool";
+
 		_define.context = Context::variable;
-		add(_define);
+		add(_define, _tree);
 
 		return;
 	}
@@ -80,7 +98,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 		_function.type = _tree->getValue("TYPE");
 		_function.context = Context::function;
 
-		add(_function);
+		add(_function, _tree);
 		enter(_function.name);
 
 		for (auto& child : _tree->children) {
@@ -89,7 +107,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 				_parameter.name = child->getValue("IDENTIFIER");
 				_parameter.type = child->getValue("TYPE");
 				_parameter.context = Context::parameter;
-				add(_parameter);
+				add(_parameter, child);
 			}
 		}
 
@@ -102,15 +120,53 @@ void ScopeAnalyser::analyse(Node* _tree) {
 
 
 	if (_tree->type == "variable") {
-		Symbol _variable;
-		_variable.name = _tree->getValue("IDENTIFIER");
-		_variable.type = _tree->getValue("TYPE");
-		_variable.context = Context::variable;
-		add(_variable);
 
-		for (auto& child : _tree->children)
-			if (child->type != "TYPE")
-				analyse(child);
+		if (_tree->isThere("COMMA")) { // single variable declaration;
+
+			auto current = _tree->children.begin();
+
+			while (current != _tree->children.end()) {
+
+				if ((*current)->type == "TYPE" || (*current)->type == "COMMA") {
+					current++;
+					continue;
+				}
+
+				if ((*current)->type == "SEMICOLON")
+					break;
+
+				Symbol _variable;
+				_variable.name = (*current)->value;
+				_variable.type = _tree->getValue("TYPE");
+				_variable.context = Context::variable;
+
+				if (_variable.type == "int") _variable.annotations.push_back(annotation::_int);
+				else if (_variable.type == "float") _variable.annotations.push_back(annotation::_float);
+				else if (_variable.type == "char") _variable.annotations.push_back(annotation::_char);
+				else if (_variable.type == "string") _variable.annotations.push_back(annotation::_string);
+				else if (_variable.type == "bool") _variable.annotations.push_back(annotation::_bool);
+
+				add(_variable, *current);
+
+				for (auto& child : (*current)->children)
+					analyse(child);
+
+				current++;
+			}
+		}
+
+		else { // single variable declaration
+			
+			Symbol _variable;
+			_variable.name = _tree->getValue("IDENTIFIER");
+			_variable.type = _tree->getValue("TYPE");
+			_variable.context = Context::variable;
+			add(_variable, _tree);
+
+			for (auto& child : _tree->children)
+				if (child->type != "TYPE")
+					analyse(child);
+		}
 
 		return;
 	}
@@ -120,7 +176,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 		_parameter.name = _tree->getValue("IDENTIFIER");
 		_parameter.type = _tree->getValue("TYPE");
 		_parameter.context = Context::parameter;
-		add(_parameter);
+		add(_parameter, _tree);
 
 		return;
 	}
@@ -130,7 +186,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 		_argument.name = _tree->getValue("IDENTIFIER");
 		_argument.type = _tree->getValue("TYPE");
 		_argument.context = Context::argument;
-		add(_argument);
+		add(_argument, _tree);
 
 		return;
 	}
@@ -202,8 +258,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 			bool reported = false;
 
 			for (const auto& symbol : currentScope->symbols) {
-				if (symbol.context == Context::error &&
-					symbol.name.find(_function) != string::npos) {
+				if (symbol.context == Context::error && symbol.name.find(_function) != string::npos) {
 					reported = true;
 					break;
 				}
@@ -213,8 +268,9 @@ void ScopeAnalyser::analyse(Node* _tree) {
 				Symbol error;
 				error.context = Context::error;
 				error.error = ScopeError::UndefinedFunction;
-				error.name = "\033[0;33mundefined function\033[0m \"" + string("\033[1;37m") + _function + "\033[0m\" in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
+				error.name = "\033[1;33mundefined function\033[0m \"" + string("\033[1;37m") + _function + "\033[0m\" in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
 				currentScope->symbols.push_back(error);
+				warnings++;
 			}
 		}
 		else if (found->context != Context::function) {
@@ -233,14 +289,15 @@ void ScopeAnalyser::analyse(Node* _tree) {
 				Symbol error;
 				error.context = Context::error;
 				error.error = ScopeError::UndefinedFunction;
-				error.name = "\033[0;33m'" + _function + "' is not a function\033[0m in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
+				error.name = "\033[1;33m'" + _function + "' is not a function\033[0m in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
 				currentScope->symbols.push_back(error);
+				warnings++;
 			}
 		}
 
 		for (auto& child : _tree->children)
-			if (child->type == "arguments")
-				analyse(child);
+			if (child->type == "argument")
+				analyse(child->children[0]);
 
 		return;
 	}
@@ -249,13 +306,12 @@ void ScopeAnalyser::analyse(Node* _tree) {
 
 		Symbol* found = lookup(_tree->value, currentScope);
 
-		if (!found) {
+		if (!found || found->context == Context::function) {
 
 			bool reported = false;
 
 			for (const auto& symbol : currentScope->symbols) {
-				if (symbol.context == Context::error &&
-					symbol.name.find(_tree->value) != string::npos) {
+				if (symbol.context == Context::error && symbol.name.find(_tree->value) != string::npos) {
 					reported = true;
 					break;
 				}
@@ -265,8 +321,10 @@ void ScopeAnalyser::analyse(Node* _tree) {
 				Symbol error;
 				error.context = Context::error;
 				error.error = ScopeError::UndeclaredVariable;
-				error.name = "\033[0;33mundeclared variable\033[0m \"" + string("\033[1;37m") + _tree->value + "\033[0m\" in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
+				if (!found) error.name = "\033[1;33mundeclared variable\033[0m \"" + string("\033[1;37m") + _tree->value + "\033[0m\" in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
+				else error.name = "(\033[1;33mvoid assignment\033[0m) function \"\033[1;37m" + _tree->value + "\033[0m\" cannot be used as a value in [" + "\033[0;90m" + currentScope->name + "\033[0m]";
 				currentScope->symbols.push_back(error);
+				warnings++;
 			}
 		}
 		return;
@@ -298,21 +356,31 @@ void ScopeAnalyser::exit() {
 
 
 
-void ScopeAnalyser::add(const Symbol& _symbol) {
+
+
+void ScopeAnalyser::add(const Symbol& _symbol, Node* _node) {
 
 	for (const auto& symbol : currentScope->symbols) {
-
 		if (symbol.name == _symbol.name) {
 			Symbol error;
 			error.context = Context::error;
 			error.error = ScopeError::VariableRedefinition;
-			error.name = "\033[0;33mredeclaration\033[0m of \"\033[1;37m" + _symbol.name + "\033[0m\" in [\033[0;90m" + currentScope->name + "\033[0m]";
+			error.name = "\033[1;33mredeclaration\033[0m of \"\033[1;37m" + _symbol.name + "\033[0m\" in [\033[0;90m" + currentScope->name + "\033[0m]";
 			currentScope->symbols.push_back(error);
+			warnings++;
 			return;
 		}
 	}
 
-	currentScope->symbols.push_back(_symbol);
+	Symbol copy = _symbol;
+	if (!_node->annotations.empty()) {
+		for (auto item : _node->annotations) {
+			copy.annotations.push_back(item);
+		}
+	}
+
+
+	currentScope->symbols.push_back(copy);
 }
 
 
@@ -360,6 +428,17 @@ void ScopeAnalyser::deleteScope(Scope* _scope) {
 	delete _scope;
 }
 
+
+
+
+bool hasScopeWarnings(const ScopeAnalyser& analyser) {
+	if (analyser.warnings) {
+		//cout << "[\033[1;31mCritical\033[0m] Unfortunately you have encountered \033[1;33m" << analyser.warnings << "\033[0m scope warning" << (analyser.warnings == 1 ? "." : "s.")
+			//<< "\nFix " << (analyser.warnings == 1 ? "it" : "them") << " before type checking. Print scope table for further information." << endl;
+		return true;
+	}
+	return false;
+}
 
 
 

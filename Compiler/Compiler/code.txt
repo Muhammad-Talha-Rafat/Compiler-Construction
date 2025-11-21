@@ -1,90 +1,85 @@
-#include <iostream>
-#include "header.h"
+﻿#include <iostream>
 using namespace std;
 
-#define MAX_SIZE 7 // (resolved)
+#define MAX 100
+#define NAME "Test"
 
-// Global variables
-int globalCounter = 0;
-float PI = 3.14;
+int globalNum = 50;
 
-int calculate(int x, int y, int z) {  // ERROR: parameter 'x' redeclared (resolved)
-    int result = x + y + z;  // ERROR: 'z' undeclared (resolved)
-    return result;
+int calculate(int x, int y) {
+    return x + y;
 }
 
 
-int calculateIt(int a, int b) {  // ERROR: function 'calculate' redefined (resolved)
-    return a * b;
-}
-
-void processData(int num) {
-    int local = num * 2;
-    
-    for (int i = 0; i < 10; i++) {
-        int temp = i + local;
-        int _temp = i * 2;  // ERROR: 'temp' redeclared in same scope (resolved)
-        
-        if (temp > 5) {
-            int inner = temp + globalCounter;
-            cout << inner;
-        }
-        
-        // cout << inner;  // ERROR: 'inner' undeclared (out of scope) (resolved)
-    }
-    
-    // cout << temp;  // ERROR: 'temp' undeclared (out of scope) (resolved)
-}
-
-void testLoops() {
-    int x = 10;
-    
-    while (x > 0) {
-        int counter = x;
-        x = x - 1;
-        cout << counter;  // ERROR: 'counter' undeclared (out of scope) (resolved)
-    }
-    
-    
-    do {
-        int y = 5;
-        int sum = sum + y;  // ERROR: 'sum' undeclared (resolved)
-    } while (x < 10);  // ERROR: 'y' undeclared (out of scope) (resolved)
+void voidFunc() {
+    cout << "This is void" << endl;
 }
 
 int main() {
-    int a = 5;
-    int b = 10;
-    int c = 15;  // ERROR: 'a' redeclared (resolved)
+    // Error 1: Type mismatch - assigning string to int
+    int number = NAME;
     
-    calculate(a, b);
-    processData(a);
+    // Error 2: Undeclared variable
+    int result = undeclaredVar + 10;
     
-    int result = calculate(a, b, 20);
+    // Error 3: Assigning void function
+    int value = voidFunc();
     
-    processData(100);  // ERROR: 'mystery' undefined function (resolved)
+    // Error 4: Type mismatch in operation
+    int x = 10;
+    float y = 5.5;
+    int z = x + y;  // Mismatching type operation: int + float, assigned to int
     
-    if (a < b) {
-        int z = a + b;
-        processData(z);  // ERROR: 'display' undefined function (resolved)
-    } else if (b < MAX_SIZE) {  // ERROR: 'MAX_SIZE' undeclared (resolved)
-        int w = PI * 2;
-    } else {
-        int v = 0;  // ERROR: 'unknownVar' undeclared (resolved)
+    // Error 5: Wrong number of arguments
+    int sum = calculate(5);
+    
+    // Error 6: Wrong argument types
+    int prod = calculate(3.14, 2.5);
+    
+    // Error 7: Undefined function
+    int mystery = unknownFunction(10, 20);
+    
+    // Error 8: Using function as variable
+    int func = calculate;
+    
+    // Error 9: Increment non-int
+    float counter = 5.5;
+    counter++;
+    
+    // Error 10: Type mismatch in assignment
+    int a = 10;
+    float b = 20.5;
+    a = b;
+    
+    if (x > 5) {
+        // Error 11: Using undeclared variable from outer scope
+        int local = outsideVar + 5;
+        
+        // Error 12: Return type mismatch (in if block)
+        float temp = 3.14;
+        int whole = temp;
     }
     
-    for (int i = 0; i < 5; i++) {
-        if (i == 2) {
-            int k = i;
-            cout << k;  // ERROR: 'k' undeclared (out of scope) (resolved)
-        }
+    // Error 13: Wrong parameter count
+    voidFunc(10, 20);
+    
+    // Error 14: Comparison type mismatch
+    if (x == y) {  // int == float
+        cout << "Equal" << endl;
     }
     
-
-
-
-    int x;
-    x = 100;
+    while (counter < 10) {
+        // Error 15: Decrement string (if we had string type)
+        int wrongType = MAX;
+        wrongType--;  // Actually fine, MAX resolves to int
+        counter = counter + 1.0;  // float assigned to counter
+    }
     
     return 0;
+}
+
+// Error 16: Return type mismatch
+int wrongReturn() {
+    float value = 3.14;
+    return value;
 }

@@ -1,2 +1,5 @@
 ﻿  main.cpp
+E:\Kachra\Compiler-Construction\Muhammad-Talha-Rafat\Compiler-Construction\Compiler\Compiler\TypeChecker.h(362,130): warning C4267: 'argument': conversion from 'size_t' to 'const int', possible loss of data
+  (compiling source file 'main.cpp')
+  
   Compiler.vcxproj -> E:\Kachra\Compiler-Construction\Muhammad-Talha-Rafat\Compiler-Construction\Compiler\x64\Debug\Compiler.exe

@@ -48,7 +48,7 @@ Node* Parser::parse_objBlock() {
 	set<string> access = { "private", "public", "protected" };
 
 	if (!access.count(peek().value))
-		return new Node("error", ParseError::UnexpectedToken("access specifier", peek()).what());
+		return new Node("error", UnexpectedToken("access specifier", peek()).what());
 
 	Node* access_node = new Node(peek().value + "_block");
 
@@ -73,7 +73,7 @@ Node* Parser::parse_objBlock() {
 					string name = peek(offset + 1).value;
 
 					if (name == "main")
-						throw ParseError::SyntaxError("an object can't have \"main\" function");
+						throw SyntaxError("an object can't have \"main\" function");
 
 					Node* function_node = parse_function(type, name);
 
@@ -97,9 +97,9 @@ Node* Parser::parse_objBlock() {
 
 					access_node->children.push_back(variable_node);
 				}
-				else throw ParseError::SyntaxError("expected a declaration but \"" + peek(offset + 2).type + "\" encountered");
+				else throw SyntaxError("expected a declaration but \"" + peek(offset + 2).type + "\" encountered");
 			}
-			else throw ParseError::SyntaxError("invalid declaration starting with \"" + peek().value + "\"");
+			else throw SyntaxError("invalid declaration starting with \"" + peek().value + "\"");
 		}
 
 	}

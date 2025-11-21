@@ -36,13 +36,13 @@ Node* Parser::parse_statements() {
 				offset++;
 
 				if (!types.count(peek(offset).value) && peek(offset).value != "void")
-					throw ParseError::ExpectedTypeToken();
+					throw ExpectedTypeToken();
 			}
 
 			if ((types.count(peek(offset).value))) {
 
 				if (peek(offset + 2).type == "lPARENTHESIS")
-					throw ParseError::SyntaxError("nested function detected ahead");
+					throw SyntaxError("nested function detected ahead");
 
 				Node* variable_node = parse_variable();
 
@@ -53,6 +53,17 @@ Node* Parser::parse_statements() {
 		else if (peek().type == "IDENTIFIER") {
 
 			// it's an assignment, or post-increment, or post-decrement, or a call statement
+
+			if (peek(1).type == "SEMICOLON") {
+
+				// it's a null statement
+
+				Node* _statement = new Node("nothing");
+				_statement->children.push_back(new Node(expectType("IDENTIFIER")));
+				_statement->children.push_back(new Node(expectType("SEMICOLON")));
+
+				return _statement;
+			}
 
 			if (peek(1).value == "++") {
 
@@ -83,10 +94,15 @@ Node* Parser::parse_statements() {
 
 				// validate argumemnts
 
-				if (peek().type != "rPARENTHESIS") {
-					Node* arguments_node = parse_arguments();
-					if (arguments_node)
-						_call_statement->children.push_back(arguments_node);
+				while (peek().type != "rPARENTHESIS") {
+
+					Node* argument_node = parse_argument();
+
+					if (argument_node)
+						_call_statement->children.push_back(argument_node);
+
+					if (peek().type == "COMMA")
+						_call_statement->children.push_back(new Node(consume()));
 				}
 
 				_call_statement->children.push_back(new Node(expectType("rPARENTHESIS")));
@@ -103,7 +119,7 @@ Node* Parser::parse_statements() {
 				_assignment->children.push_back(new Node(expectType("IDENTIFIER")));
 
 				if (!assignment_op.count(peek().type)) {
-					_assignment->children.push_back(new Node("error", ParseError::UnexpectedToken("assignment operator", peek()).what()));
+					_assignment->children.push_back(new Node("error", UnexpectedToken("assignment operator", peek()).what()));
 					return _assignment;
 				}
 				_assignment->children.push_back(new Node(consume())); // assignment operator
@@ -118,7 +134,7 @@ Node* Parser::parse_statements() {
 			}
 
 			// unknown token after IDENTIFIER
-			else return new Node("error", ParseError::SyntaxError("invalid statement starting with \"IDENTIFIER\"").what());
+			else return new Node("error", SyntaxError("invalid statement starting with \"IDENTIFIER\"").what());
 		}
 
 		else if (peek().value == "cout") {
@@ -131,6 +147,10 @@ Node* Parser::parse_statements() {
 				_cout->children.push_back(new Node(expectValue("cout")));
 
 				while (peek().type != "SEMICOLON") {
+
+					if (peek().type != "LEFT_SHIFT" && peek().type != "SEMICOLON")
+						throw UnexpectedToken("SEMICOLON", peek());
+
 					_cout->children.push_back(new Node(expectType("LEFT_SHIFT")));
 
 					if (peek().value == "endl")
@@ -139,10 +159,10 @@ Node* Parser::parse_statements() {
 						Node* expression_node = parse_expression();
 
 						if (expression_node && expression_node->type == "error")
-							throw runtime_error(expression_node->value);
+							throw SyntaxError(expression_node->value);
 
 						if (!expression_node)
-							throw ParseError::ExpectedExpression();
+							throw ExpectedExpression();
 
 						_cout->children.push_back(expression_node);
 					}
@@ -193,6 +213,14 @@ Node* Parser::parse_statements() {
 					try {
 						if (types.count(peek().value)) {
 							variable_node->type = "variable";
+
+							if (peek().value == "int") variable_node->annotations.push_back(annotation::_int);
+							else if (peek().value == "float") variable_node->annotations.push_back(annotation::_float);
+							else if (peek().value == "double") variable_node->annotations.push_back(annotation::_double);
+							else if (peek().value == "char") variable_node->annotations.push_back(annotation::_char);
+							else if (peek().value == "string") variable_node->annotations.push_back(annotation::_string);
+							else if (peek().value == "bool") variable_node->annotations.push_back(annotation::_bool);
+
 							variable_node->children.push_back(new Node(consume())); // type
 						}
 
@@ -210,7 +238,7 @@ Node* Parser::parse_statements() {
 					_for_loop->children.push_back(variable_node);
 
 				}
-				else throw ParseError::SyntaxError("expected a declaration or assignment but \"" + peek().value + "\" encountered");
+				else throw SyntaxError("expected a declaration or assignment but \"" + peek().value + "\" encountered");
 
 				_for_loop->children.push_back(new Node(expectType("SEMICOLON")));
 
@@ -250,7 +278,7 @@ Node* Parser::parse_statements() {
 						update_node->children.push_back(new Node(expectType("IDENTIFIER")));
 
 						if (!assignment_op.count(peek().type))
-							throw ParseError::SyntaxError("expected an assignment operator but \"" + peek().value + "\" encountered");
+							throw SyntaxError("expected an assignment operator but \"" + peek().value + "\" encountered");
 
 						update_node->children.push_back(new Node(consume()));
 
@@ -263,7 +291,7 @@ Node* Parser::parse_statements() {
 					}
 
 				}
-				else throw ParseError::SyntaxError("expected an update statement but \"" + peek().value + "\" encountered");
+				else throw SyntaxError("expected an update statement but \"" + peek().value + "\" encountered");
 
 				_for_loop->children.push_back(update_node);
 
@@ -500,7 +528,7 @@ Node* Parser::parse_statements() {
 		else if (peek().value == "else if" || peek().value == "else") {
 
 			// it's an "else if" or "else" block without an "if" block (error)
-			throw ParseError::SyntaxError("Missing \"if\" block before \"" + peek().value + "\"");
+			throw SyntaxError("Missing \"if\" block before \"" + peek().value + "\"");
 
 		}	
 		
@@ -511,7 +539,7 @@ Node* Parser::parse_statements() {
 
 		}
 
-		else throw ParseError::SyntaxError("expected a valid statement but \"" + peek().value + "\" encountered");
+		else throw SyntaxError("expected a valid statement but \"" + peek().value + "\" encountered");
 
 	}
 	catch (const runtime_error& e) {
@@ -657,7 +685,7 @@ Node* Parser::parse_comparison() {
 			_comparison->children.push_back(left_node);
 
 		if (!comparison_op.count(peek().type))
-			throw ParseError::SyntaxError("expected a comparison operator but \"" + peek().value + "\" encountered");
+			throw SyntaxError("expected a comparison operator but \"" + peek().value + "\" encountered");
 
 		_comparison->children.push_back(new Node(consume())); // comparison operator
 

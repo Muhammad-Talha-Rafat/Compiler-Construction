@@ -45,7 +45,7 @@ struct token {
 
 set<string> KEYWORDS = { "#include", "#define", "using", "namespace",
                         "main", "return", "endl", "cout", "cin", "auto",
-                        "do", "while", "for", "break", "continue", "true", "false",
+                        "do", "while", "for", "break", "continue",
                         "if", "else", "switch", "case", "default", "try", "catch", "throw",
                         "static", "const", "new", "delete", "sizeof", "this",
                         "class", "struct", "template", "enum", "public", "private", "protected" };
@@ -59,6 +59,7 @@ vector<rule> Rules = {
     {"LIBRARY", regex("^<[A-Za-z_0-9\\.]+>")},
     {"HEADER", regex("^\"[A-Za-z_0-9\\.]+\\.h\"")},
 
+    {"BOOLEAN", regex("^(true|false)")},
     {"ELSEIF", regex(R"(^else\b\s+if\b)")},
     {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*")},
 
