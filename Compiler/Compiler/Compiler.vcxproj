@@ -131,6 +131,7 @@
     <Text Include="Grammer.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IRGenerator.h" />
     <ClInclude Include="Structs.h" />
     <ClInclude Include="noRegex.h" />
     <ClInclude Include="ParseDeclaration.h" />

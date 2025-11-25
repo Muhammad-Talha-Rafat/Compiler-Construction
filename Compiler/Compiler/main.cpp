@@ -4,6 +4,7 @@
 #include "Parser.h"
 #include "ScopeAnalyser.h"
 #include "TypeChecker.h"
+#include "IRGenerator.h"
 using namespace std;
 
 
@@ -25,7 +26,10 @@ int main() {
         if (!hasScopeWarnings(analyser)) {
             TypeChecker checker(root, scopeTable);
             checker.check();
-            root->print();
+            //root->print();
+            IRGenerator gen;
+            gen.generate(root);
+            gen.printCode();
         }
         else scopeTable->print();
     }

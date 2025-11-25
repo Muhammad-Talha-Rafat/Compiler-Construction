@@ -104,20 +104,11 @@ Node* Parser::parse_define() {
 	Node* _define = new Node("define");
 
 	try {
-		_define->annotations.push_back(annotation::_const);
-
 		_define->children.push_back(new Node(expectValue("#define")));
 		_define->children.push_back(new Node(expectType("IDENTIFIER")));
 
-		if (literals.count(peek().type)) {
-			if (peek().type == "INTEGER") _define->annotations.push_back(annotation::_int);
-			else if (peek().type == "DECIMAL") _define->annotations.push_back(annotation::_float);
-			else if (peek().type == "CHARACTER") _define->annotations.push_back(annotation::_char);
-			else if (peek().type == "STRLITERAL") _define->annotations.push_back(annotation::_string);
-			else if (peek().type == "BOOLEAN") _define->annotations.push_back(annotation::_bool);
-
+		if (literals.count(peek().type))
 			_define->children.push_back(new Node(consume()));
-		}
 		else throw UnexpectedToken("literal", peek());
 	}
 	catch (const runtime_error& e) {
@@ -136,20 +127,11 @@ Node* Parser::parse_variable() {
 	try {
 		bool assigned = false;
 
-		if (peek().value == "const" || peek().value == "static") {
-			_variable->annotations.push_back(peek().value == "const" ? annotation::_const : annotation::_static);
+		if (peek().value == "const" || peek().value == "static")
 			_variable->children.push_back(new Node(consume()));
-		}
 
 		if (!types.count(peek().value))
 			throw ExpectedTypeToken();
-
-		if (peek().value == "int") _variable->annotations.push_back(annotation::_int);
-		else if (peek().value == "float") _variable->annotations.push_back(annotation::_float);
-		else if (peek().value == "double") _variable->annotations.push_back(annotation::_double);
-		else if (peek().value == "char") _variable->annotations.push_back(annotation::_char);
-		else if (peek().value == "string") _variable->annotations.push_back(annotation::_string);
-		else if (peek().value == "bool") _variable->annotations.push_back(annotation::_bool);
 
 		_variable->children.push_back(new Node(consume()));						// type
 
@@ -177,8 +159,8 @@ Node* Parser::parse_variable() {
 		}
 
 		// a const/static variable with no value at initialization
-		if ((_variable->children[0]->value == "const" || _variable->children[0]->value == "static") && !assigned)
-			_variable->children.push_back(new Node("error", "Runtime error: const/static variable must have a value"));
+		if ((_variable->isThere("const", "value") || _variable->isThere("static", "value")) && !assigned)
+			throw SyntaxError("Runtime error: const/static variable must have a value at declaration");
 
 		_variable->children.push_back(new Node(expectType("SEMICOLON")));		// SEMICOLON
 	}
@@ -220,10 +202,6 @@ Node* Parser::parse_expression() {
 	}
 
 	return _left;
-
-
-
-
 }
 
 

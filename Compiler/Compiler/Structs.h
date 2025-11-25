@@ -63,6 +63,10 @@ namespace TypeErrors {
         return runtime_error("\033[1;31mtype error\033[0m: cannot assign a <\033[1;33mvoid\033[0m> function (\033[1;33m" + function_name + "\033[0m) to a variable");
     }
 
+    runtime_error ConstAssignment(const string& variable_name) {
+        return runtime_error("\033[1;31mconst assignment\033[0m: cannot assign anything to a <\033[1;33mconst\033[0m> variable (\033[1;33m" + variable_name + "\033[0m)");
+    }
+
     runtime_error ParameterMiscount(const string& function_name) {
         return runtime_error("\033[1;31mparameter miscount\033[0m: number of arguments in function call (\033[1;33m" + function_name + "\033[0m) do not match");
     }
@@ -78,19 +82,6 @@ namespace TypeErrors {
 
 
 
-enum annotation {
-    _const,
-    _static,
-    _int,
-    _float,
-    _double,
-    _char,
-    _string,
-    _bool,
-    _void,
-    _error
-};
-
 
 struct Node {
 
@@ -98,8 +89,6 @@ struct Node {
     string type;
     string value;
     vector<Node*> children;
-    vector<annotation> annotations;
-    vector<string> errors;
 
     Node(const string& _type, const string& _value = "")
         : type(_type), value(_value) {}
@@ -124,28 +113,6 @@ struct Node {
         if (!value.empty())
             cout << ": " << value;
 
-        if (!annotations.empty()) {
-            cout << "[";
-            for (size_t i = 0; i < annotations.size(); ++i) {
-                cout << "\033[0;90m";
-                switch (annotations[i]) {
-                case _const: cout << "const"; break;
-                case _static: cout << "static"; break;
-                case _int: cout << "int"; break;
-                case _float: cout << "float"; break;
-                case _double: cout << "double"; break;
-                case _char: cout << "char"; break;
-                case _string: cout << "string"; break;
-                case _bool: cout << "bool"; break;
-                case _void: cout << "void"; break;
-                }
-                cout << "\033[0m";
-                if (i + 1 < annotations.size()) cout << ", ";
-            }
-            cout << "]";
-        }
-
-
         cout << endl;
 
         for (Node* child : children)
@@ -168,10 +135,13 @@ struct Node {
         return nullptr;
     }
 
-    bool isThere(const string& _type) {
-        for (auto* child : this->children)
-            if (child->type == _type)
+    bool isThere(const string& word, const string& check = "type") {
+        for (auto* child : this->children) {
+            if (check == "type" && child->type == word)
                 return true;
+            if (check == "value" && child->value == word)
+                return true;
+        }
         return false;
     }
  
@@ -207,7 +177,7 @@ struct Symbol {
     string type;
     Context context;
     ScopeError error;
-    vector<annotation> annotations;
+    bool isConst = false;
 };
 
 
@@ -268,36 +238,12 @@ struct Scope {
             else {
                 cout << spacing << " " << symbol.name << " : \033[0;36m";
                 switch (symbol.context) {
-                case Context::variable: cout << "variable "; break;
-                case Context::function: cout << "function "; break;
-                case Context::argument: cout << "argument "; break;
-                case Context::parameter: cout << "parameter "; break;
+                case Context::variable: cout << "variable"; break;
+                case Context::function: cout << "function"; break;
+                case Context::argument: cout << "argument"; break;
+                case Context::parameter: cout << "parameter"; break;
                 }
-
-                if (!symbol.annotations.empty()) {
-                    cout << "\033[0m[";
-                    for (size_t i = 0; i < symbol.annotations.size(); ++i) {
-                        cout << "\033[1;33m";
-                        switch (symbol.annotations[i]) {
-                        case _const: cout << "const"; break;
-                        case _static: cout << "static"; break;
-                        case _int: cout << "int"; break;
-                        case _float: cout << "float"; break;
-                        case _double: cout << "double"; break;
-                        case _char: cout << "char"; break;
-                        case _string: cout << "string"; break;
-                        case _bool: cout << "bool"; break;
-                        case _void: cout << "void"; break;
-                        }
-                        cout << "\033[0m";
-                        if (i + 1 < symbol.annotations.size()) cout << ", ";
-                    }
-                    cout << "]";
-                }
-
-                cout << "\033[0m" << " (\033[0;91m" << symbol.type << "\033[0m)\n";
-
-
+                cout << "\033[0m" << " (\033[0;91m" << (symbol.isConst ? "const " : "") << symbol.type << "\033[0m)\n";
             }
         }
         cout << endl;

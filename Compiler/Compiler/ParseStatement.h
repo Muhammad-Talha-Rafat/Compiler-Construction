@@ -213,14 +213,6 @@ Node* Parser::parse_statements() {
 					try {
 						if (types.count(peek().value)) {
 							variable_node->type = "variable";
-
-							if (peek().value == "int") variable_node->annotations.push_back(annotation::_int);
-							else if (peek().value == "float") variable_node->annotations.push_back(annotation::_float);
-							else if (peek().value == "double") variable_node->annotations.push_back(annotation::_double);
-							else if (peek().value == "char") variable_node->annotations.push_back(annotation::_char);
-							else if (peek().value == "string") variable_node->annotations.push_back(annotation::_string);
-							else if (peek().value == "bool") variable_node->annotations.push_back(annotation::_bool);
-
 							variable_node->children.push_back(new Node(consume())); // type
 						}
 

@@ -13,11 +13,8 @@ bool hasParseError(Node* root) {
 	Node* temp = root;
 	while (temp && !temp->children.empty())
 		temp = temp->children.back();
-	if (temp && temp->type == "error") {
-		//cout << "[\033[1;31mCritical\033[0m] Unfortunately an error has been encountered while parsing"
-			//<< "\nCannot perform scope analysis. Print the AST for further information\n";
+	if (temp && temp->type == "error")
 		return true;
-	}
 	return false;
 }
 

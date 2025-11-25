@@ -11,7 +11,7 @@ private:
     Node* root;
     Scope* scopeTable;
 
-    unordered_map<Scope*, unordered_map< string, int >> scope_counter;
+    unordered_map<Scope*, unordered_map<string, int>> scope_counter;
 
     string lookup_type(const string& _identifier);
     bool isLiteral(const string& _type);
@@ -135,6 +135,25 @@ void TypeChecker::check_node(Node* _node) {
 
             if (child->type == "ASSIGN") _assign = true;
         }
+
+        Scope* current = scopeTable;
+        Symbol* symbol = nullptr;
+        while (current && !symbol) {
+            for (auto& _symbol : current->symbols) {
+                if (_symbol.name == variable_name) {
+                    symbol = &_symbol;
+                    break;
+                }
+            }
+            current = current->parent;
+        }
+
+        if (_node->type == "assignment" && symbol->isConst) {
+            _node->children.push_back(new Node("error", ConstAssignment(variable_name).what()));
+            warnings++;
+            return;
+        }
+
 
         if (assigned_value) {
 

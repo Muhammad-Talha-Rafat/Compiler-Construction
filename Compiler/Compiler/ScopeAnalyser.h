@@ -82,6 +82,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 		else if (_define.type == "BOOLEAN") _define.type = "bool";
 
 		_define.context = Context::variable;
+		_define.isConst = true;
 		add(_define, _tree);
 
 		return;
@@ -121,7 +122,7 @@ void ScopeAnalyser::analyse(Node* _tree) {
 
 	if (_tree->type == "variable") {
 
-		if (_tree->isThere("COMMA")) { // single variable declaration;
+		if (_tree->isThere("COMMA")) { // multi-variable declaration;
 
 			auto current = _tree->children.begin();
 
@@ -140,12 +141,6 @@ void ScopeAnalyser::analyse(Node* _tree) {
 				_variable.type = _tree->getValue("TYPE");
 				_variable.context = Context::variable;
 
-				if (_variable.type == "int") _variable.annotations.push_back(annotation::_int);
-				else if (_variable.type == "float") _variable.annotations.push_back(annotation::_float);
-				else if (_variable.type == "char") _variable.annotations.push_back(annotation::_char);
-				else if (_variable.type == "string") _variable.annotations.push_back(annotation::_string);
-				else if (_variable.type == "bool") _variable.annotations.push_back(annotation::_bool);
-
 				add(_variable, *current);
 
 				for (auto& child : (*current)->children)
@@ -160,6 +155,8 @@ void ScopeAnalyser::analyse(Node* _tree) {
 			Symbol _variable;
 			_variable.name = _tree->getValue("IDENTIFIER");
 			_variable.type = _tree->getValue("TYPE");
+			if (_tree->children[0]->value == "const")
+				_variable.isConst = true;
 			_variable.context = Context::variable;
 			add(_variable, _tree);
 
@@ -371,16 +368,7 @@ void ScopeAnalyser::add(const Symbol& _symbol, Node* _node) {
 			return;
 		}
 	}
-
-	Symbol copy = _symbol;
-	if (!_node->annotations.empty()) {
-		for (auto item : _node->annotations) {
-			copy.annotations.push_back(item);
-		}
-	}
-
-
-	currentScope->symbols.push_back(copy);
+	currentScope->symbols.push_back(_symbol);
 }
 
 
@@ -432,12 +420,7 @@ void ScopeAnalyser::deleteScope(Scope* _scope) {
 
 
 bool hasScopeWarnings(const ScopeAnalyser& analyser) {
-	if (analyser.warnings) {
-		//cout << "[\033[1;31mCritical\033[0m] Unfortunately you have encountered \033[1;33m" << analyser.warnings << "\033[0m scope warning" << (analyser.warnings == 1 ? "." : "s.")
-			//<< "\nFix " << (analyser.warnings == 1 ? "it" : "them") << " before type checking. Print scope table for further information." << endl;
-		return true;
-	}
-	return false;
+	return analyser.warnings;
 }
 
 

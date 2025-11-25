@@ -16,14 +16,20 @@
     <Filter Include="Header Files\Regex">
       <UniqueIdentifier>{04cc9304-9c3e-42c1-98be-7870dcc1dcbb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Regex\Parser">
-      <UniqueIdentifier>{72a9e2d1-eb58-4aca-8d9d-8c04abe18d73}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Regex\Scope Analysis">
       <UniqueIdentifier>{7c14be4b-ec77-4a36-bf50-40b9613d0ad7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Regex\Type Checking">
       <UniqueIdentifier>{76e5a68c-2f5f-455f-80c4-9103e57c9301}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Regex\Lexical Analysis">
+      <UniqueIdentifier>{72bfcf84-2533-4dbb-a182-9e6fba91e41d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Regex\Syntax Analysis">
+      <UniqueIdentifier>{72a9e2d1-eb58-4aca-8d9d-8c04abe18d73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Regex\IR Generation">
+      <UniqueIdentifier>{5d1d8231-8c3b-49e0-b93f-30de1f9634b6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -49,23 +55,20 @@
     <ClInclude Include="noRegex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tokenizer.h">
-      <Filter>Header Files\Regex</Filter>
-    </ClInclude>
     <ClInclude Include="Parser.h">
-      <Filter>Header Files\Regex\Parser</Filter>
+      <Filter>Header Files\Regex\Syntax Analysis</Filter>
     </ClInclude>
     <ClInclude Include="ParseDeclaration.h">
-      <Filter>Header Files\Regex\Parser</Filter>
+      <Filter>Header Files\Regex\Syntax Analysis</Filter>
     </ClInclude>
     <ClInclude Include="ParseFunction.h">
-      <Filter>Header Files\Regex\Parser</Filter>
+      <Filter>Header Files\Regex\Syntax Analysis</Filter>
     </ClInclude>
     <ClInclude Include="ParseObject.h">
-      <Filter>Header Files\Regex\Parser</Filter>
+      <Filter>Header Files\Regex\Syntax Analysis</Filter>
     </ClInclude>
     <ClInclude Include="ParseStatement.h">
-      <Filter>Header Files\Regex\Parser</Filter>
+      <Filter>Header Files\Regex\Syntax Analysis</Filter>
     </ClInclude>
     <ClInclude Include="ScopeAnalyser.h">
       <Filter>Header Files\Regex\Scope Analysis</Filter>
@@ -74,10 +77,16 @@
       <Filter>Header Files\Regex</Filter>
     </ClInclude>
     <ClInclude Include="ParseHeader.h">
-      <Filter>Header Files\Regex\Parser</Filter>
+      <Filter>Header Files\Regex\Syntax Analysis</Filter>
     </ClInclude>
     <ClInclude Include="TypeChecker.h">
       <Filter>Header Files\Regex\Type Checking</Filter>
+    </ClInclude>
+    <ClInclude Include="Tokenizer.h">
+      <Filter>Header Files\Regex\Lexical Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="IRGenerator.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

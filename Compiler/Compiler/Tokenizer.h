@@ -63,8 +63,8 @@ vector<rule> Rules = {
     {"ELSEIF", regex(R"(^else\b\s+if\b)")},
     {"IDENTIFIER", regex("^#?[_A-Za-z][_A-Za-z0-9]*")},
 
-    {"DECIMAL", regex("^[0-9]+\\.[0-9]+")},
-    {"INTEGER", regex("^[0-9]+")},
+    {"DECIMAL", regex("^-?[0-9]+\\.[0-9]+")},
+    {"INTEGER", regex("^-?[0-9]+")},
     {"CHARACTER", regex("^'(\\.|[^'\\\\])'")},
     {"STRLITERAL", regex("^\"([^\"\\\\]|\\\\.)*\"")},
 

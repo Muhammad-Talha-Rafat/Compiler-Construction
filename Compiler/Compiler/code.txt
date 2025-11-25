@@ -1,85 +1,39 @@
-﻿#include <iostream>
-using namespace std;
-
-#define MAX 100
-#define NAME "Test"
-
-int globalNum = 50;
-
-int calculate(int x, int y) {
-    return x + y;
+﻿int sum(int a, int b) {
+	return a + b;
 }
 
-
-void voidFunc() {
-    cout << "This is void" << endl;
-}
-
-int main() {
-    // Error 1: Type mismatch - assigning string to int
-    int number = NAME;
-    
-    // Error 2: Undeclared variable
-    int result = undeclaredVar + 10;
-    
-    // Error 3: Assigning void function
-    int value = voidFunc();
-    
-    // Error 4: Type mismatch in operation
-    int x = 10;
-    float y = 5.5;
-    int z = x + y;  // Mismatching type operation: int + float, assigned to int
-    
-    // Error 5: Wrong number of arguments
-    int sum = calculate(5);
-    
-    // Error 6: Wrong argument types
-    int prod = calculate(3.14, 2.5);
-    
-    // Error 7: Undefined function
-    int mystery = unknownFunction(10, 20);
-    
-    // Error 8: Using function as variable
-    int func = calculate;
-    
-    // Error 9: Increment non-int
-    float counter = 5.5;
-    counter++;
-    
-    // Error 10: Type mismatch in assignment
-    int a = 10;
-    float b = 20.5;
-    a = b;
-    
-    if (x > 5) {
-        // Error 11: Using undeclared variable from outer scope
-        int local = outsideVar + 5;
-        
-        // Error 12: Return type mismatch (in if block)
-        float temp = 3.14;
-        int whole = temp;
+int calculate(int c) {
+    if (c > 0) {
+        return 1;
     }
-    
-    // Error 13: Wrong parameter count
-    voidFunc(10, 20);
-    
-    // Error 14: Comparison type mismatch
-    if (x == y) {  // int == float
-        cout << "Equal" << endl;
+    else if (c < 0) {
+        return -1;
     }
-    
-    while (counter < 10) {
-        // Error 15: Decrement string (if we had string type)
-        int wrongType = MAX;
-        wrongType--;  // Actually fine, MAX resolves to int
-        counter = counter + 1.0;  // float assigned to counter
-    }
-    
     return 0;
 }
 
-// Error 16: Return type mismatch
-int wrongReturn() {
-    float value = 3.14;
-    return value;
+void show(int c) {
+	cout << "Sum : " << c << endl;
 }
+
+int main () {
+	int a = 9;
+	int b = 11;
+
+	int c = sum(a, b);
+
+	show(c);
+
+    for (int i = 0; i < c; i++) {
+        cout << i << endl;
+    }
+
+    int d = calculate(c);
+
+    cout << "Result : " << d << endl;
+
+	return 0;
+}
+
+
+
