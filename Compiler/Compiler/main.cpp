@@ -26,10 +26,12 @@ int main() {
         if (!hasScopeWarnings(analyser)) {
             TypeChecker checker(root, scopeTable);
             checker.check();
-            //root->print();
-            IRGenerator gen;
-            gen.generate(root);
-            gen.printCode();
+            if (!hasTypeWarnings(checker)) {
+                IRGenerator gen;
+                gen.generate(root);
+                gen.printCode();
+            }
+            else root->print();
         }
         else scopeTable->print();
     }

@@ -378,7 +378,7 @@ bool TypeChecker::validate_arguments(Node* _function_call) {
         }
 
         if (argument_type != parameters[i].type) {
-            _function_call->children.push_back(new Node("error", ParameterTypeMismatch(_function_call->getValue("IDENTIFIER"), i + 1).what()));
+            _function_call->children.push_back(new Node("error", ParameterTypeMismatch(_function_call->getValue("IDENTIFIER"), int(i + 1)).what()));
             warnings++;
             return false;
         }
@@ -394,8 +394,8 @@ bool TypeChecker::validate_arguments(Node* _function_call) {
 // outlaw
 bool hasTypeWarnings(TypeChecker& checker) {
     if (checker.warnings != 0) {
-        cout << "[\033[1;31mCritical\033[0m] Unfortunately you have encountered \033[1;33m" << checker.warnings << "\033[0m type warning" << (checker.warnings == 1 ? "" : "s")
-            << endl << "Resolve them to continue to IR generation";
+        //cout << "[\033[1;31mCritical\033[0m] Unfortunately you have encountered \033[1;33m" << checker.warnings << "\033[0m type warning" << (checker.warnings == 1 ? "" : "s")
+        //    << endl << "Resolve them to continue to IR generation";
         return true;
     }
     return false;

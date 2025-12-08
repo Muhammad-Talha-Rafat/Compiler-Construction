@@ -9,14 +9,16 @@ using namespace std;
 using namespace ParseError;
 
 
-bool hasParseError(Node* root) {
-	Node* temp = root;
-	while (temp && !temp->children.empty())
-		temp = temp->children.back();
-	if (temp && temp->type == "error")
+bool hasParseError(Node * root) {
+	if (root->type == "error")
 		return true;
+	for (Node* child : root->children) {
+		if (hasParseError(child))
+			return true;
+	}
 	return false;
 }
+
 
 
 
